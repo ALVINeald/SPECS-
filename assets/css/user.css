@@ -1,0 +1,510 @@
+/* ============================================================
+   SPECS – User/Consumer Stylesheet
+   File: assets/css/user.css
+   Used by: user/ pages only
+   ============================================================ */
+
+/* ── PRODUCT CARDS (browse.php) ───────────────────────────── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--r);
+  padding: 18px;
+  transition: all .2s;
+}
+
+.product-card:hover {
+  border-color: var(--mint);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.product-name {
+  font-weight: 800;
+  font-size: .94rem;
+  margin-bottom: 2px;
+}
+
+.product-unit {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.product-cat-badge {
+  background: var(--cream);
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 99px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.product-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.price-best-label,
+.price-high-label {
+  font-size: .67rem;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 2px;
+}
+
+.price-best-value {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.15rem;
+  color: var(--leaf);
+}
+
+.price-high-value {
+  font-size: .9rem;
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.savings-chip {
+  background: #d4edda;
+  color: #155724;
+  font-size: .68rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* ── CATEGORY PILL FILTER ─────────────────────────────────── */
+.cat-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.cat-pill {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: .78rem;
+  font-weight: 700;
+  border: 1.5px solid var(--sand);
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all .18s;
+  text-decoration: none;
+}
+
+.cat-pill:hover,
+.cat-pill.active {
+  background: var(--forest);
+  color: #fff;
+  border-color: var(--forest);
+}
+
+/* ── STORE PRICE POPUP ────────────────────────────────────── */
+.store-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 14px;
+  border-radius: var(--rs);
+  margin-bottom: 7px;
+  border: 1.5px solid var(--sand);
+  background: var(--cream);
+  transition: all .15s;
+}
+
+.store-price-row.best {
+  background: #f0fdf4;
+  border-color: #a3d4b5;
+}
+
+.store-price-value {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+}
+
+.store-price-row.best .store-price-value { color: var(--leaf); }
+
+.store-best-chip {
+  background: #d4edda;
+  color: #155724;
+  font-size: .66rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
+
+/* ── BASKET (basket.php) ──────────────────────────────────── */
+.basket-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.basket-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sand);
+}
+
+.basket-item:last-child { border-bottom: none; }
+
+.basket-item-info { flex: 1; }
+
+.basket-qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--sand);
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  transition: background .15s;
+}
+
+.qty-btn:hover { background: var(--mint); color: #fff; }
+
+.qty-display {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Store comparison rows */
+.store-compare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--rs);
+  margin-bottom: 8px;
+  border: 1.5px solid var(--sand);
+  background: var(--cream);
+  transition: all .15s;
+}
+
+.store-compare-row.best-store {
+  background: #f0fdf4;
+  border-color: #a3d4b5;
+}
+
+/* Receipt box */
+.receipt-box {
+  background: var(--forest);
+  color: #fff;
+  border-radius: var(--r);
+  padding: 28px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.receipt-header {
+  text-align: center;
+  border-bottom: 2px dashed rgba(255,255,255,.3);
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+}
+
+.receipt-brand {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.receipt-ref {
+  font-size: .8rem;
+  color: rgba(255,255,255,.5);
+  margin-top: 4px;
+}
+
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  font-size: .84rem;
+}
+
+.receipt-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0 6px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.receipt-savings {
+  background: rgba(233,168,32,.15);
+  border-radius: var(--rs);
+  padding: 10px;
+  text-align: center;
+  font-size: .82rem;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── ALERTS (alerts.php) ──────────────────────────────────── */
+.alerts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.alert-card {
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--r);
+  padding: 20px;
+  transition: border-color .2s;
+}
+
+.alert-card.triggered { border-color: #a3d4b5; }
+.alert-card.met       { border-color: var(--gold); }
+
+.alert-progress-bar {
+  height: 5px;
+  background: var(--sand);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.alert-progress-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 99px;
+  transition: width .5s;
+}
+
+/* ── TRENDS (trends.php) ──────────────────────────────────── */
+.trend-bar-row {
+  margin-bottom: 14px;
+}
+
+.trend-bar-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: .88rem;
+}
+
+.trend-bar-track {
+  height: 10px;
+  background: var(--sand);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.trend-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .5s;
+}
+
+.trend-bar-fill.best { background: var(--leaf); }
+.trend-bar-fill.other{ background: var(--mint); }
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-height: 320px;
+}
+
+/* ── ACCOUNT (account.php) ────────────────────────────────── */
+.account-header {
+  background: linear-gradient(135deg, var(--forest), var(--leaf));
+  border-radius: var(--r);
+  padding: 28px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.account-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--forest);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.account-name  { font-family: 'Nunito',sans-serif; font-weight:900; font-size:1.3rem; color:#fff; margin-bottom:3px; }
+.account-email { color: rgba(255,255,255,.6); font-size:.85rem; }
+.account-since { color: rgba(255,255,255,.4); font-size:.75rem; margin-top:3px; }
+
+.account-stats {
+  display: flex;
+  gap: 20px;
+  margin-left: auto;
+}
+
+.account-stat-num {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: var(--gold);
+  text-align: center;
+}
+
+.account-stat-lbl {
+  font-size: .68rem;
+  color: rgba(255,255,255,.5);
+  text-align: center;
+}
+
+/* ── BUDGET TRACKER ───────────────────────────────────────── */
+.budget-bar-track {
+  height: 8px;
+  background: var(--sand);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.budget-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .5s;
+}
+
+.budget-ok      { background: var(--leaf); }
+.budget-warning { background: var(--gold); }
+.budget-danger  { background: var(--red); }
+
+/* ── DASHBOARD (index.php) ────────────────────────────────── */
+.user-dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.user-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.user-stat-card {
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--r);
+  padding: 18px;
+  transition: all .2s;
+  text-decoration: none;
+  display: block;
+}
+
+.user-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── QUICK LINKS ──────────────────────────────────────────── */
+.quick-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.quick-link-card {
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--r);
+  padding: 20px;
+  transition: all .2s;
+  text-decoration: none;
+  display: block;
+}
+
+.quick-link-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--mint);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-link-icon { font-size: 1.6rem; margin-bottom: 8px; }
+.quick-link-title { font-family: 'Nunito', sans-serif; font-weight: 800; margin-bottom: 5px; }
+.quick-link-desc  { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+
+/* ── TRIGGERED ALERT BANNER ───────────────────────────────── */
+.triggered-banner {
+  background: #d4edda;
+  border: 1.5px solid #a3d4b5;
+  border-radius: var(--r);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.triggered-banner-title {
+  font-weight: 800;
+  color: #155724;
+  margin-bottom: 10px;
+}
+
+.triggered-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-radius: var(--rs);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+/* ── RESPONSIVE USER ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .basket-layout       { grid-template-columns: 1fr; }
+  .user-dashboard-grid { grid-template-columns: 1fr; }
+  .products-grid       { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .products-grid    { grid-template-columns: 1fr; }
+  .alerts-grid      { grid-template-columns: 1fr; }
+  .account-stats    { gap: 12px; }
+  .user-stat-cards  { grid-template-columns: repeat(2, 1fr); }
+  .quick-links-grid { grid-template-columns: repeat(2, 1fr); }
+}
