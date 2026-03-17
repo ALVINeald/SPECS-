@@ -20,15 +20,18 @@ $totalPrices   = $conn->query("SELECT COUNT(*) AS t FROM prices")->fetch_assoc()
 
 // Get cheapest product deals (best savings)
 $deals = $conn->query("
-    SELECT p.name, p.unit, MIN(pr.price) AS best_price, 
-           MAX(pr.price) AS worst_price, s.name AS best_store
+    SELECT p.id, p.name, p.unit, 
+           MIN(pr.price) AS best_price, 
+           MAX(pr.price) AS worst_price,
+           (MAX(pr.price) - MIN(pr.price)) AS savings,
+           s.name AS best_store
     FROM prices pr
     JOIN products p ON pr.product_id = p.id
     JOIN stores s ON pr.store_id = s.id
     WHERE p.active = 1
     GROUP BY p.id
-    HAVING (worst_price - best_price) > 2000
-    ORDER BY (worst_price - best_price) DESC
+    HAVING (MAX(pr.price) - MIN(pr.price)) > 2000
+    ORDER BY (MAX(pr.price) - MIN(pr.price)) DESC
     LIMIT 6
 ")->fetch_all(MYSQLI_ASSOC);
 

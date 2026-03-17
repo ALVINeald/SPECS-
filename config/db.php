@@ -14,13 +14,3 @@ if ($conn->connect_error) {
 
 $conn->query("SET time_zone = '+03:00'");
 ?>
-```
-5. Save it
-
----
-
-## STEP 5 — Set Up the Database
-1. Open your browser
-2. Go to:
-```
-http://localhost/phpmyadmin
