@@ -8,26 +8,23 @@ require_once '../config/db.php';
 require_once '../includes/functions.php';
 require_once '../includes/auth.php';
 requireLogin();
-
+ 
 $pageTitle = 'My Dashboard';
 $user      = getCurrentUser();
 $uid       = (int)$user['id'];
-
-// ── STATS ─────────────────────────────────────────────────────
+ 
 $basketCount  = getBasketCount($conn);
 $alertsCount  = getAlertsCount($conn);
 $totalProds   = $conn->query("SELECT COUNT(*) AS t FROM products WHERE active=1")->fetch_assoc()['t'];
 $totalStores  = $conn->query("SELECT COUNT(*) AS t FROM stores WHERE active=1")->fetch_assoc()['t'];
-
-// ── BASKET TOTAL ──────────────────────────────────────────────
+ 
 $basketTotal = $conn->query("
     SELECT SUM(
         (SELECT MIN(pr.price) FROM prices pr WHERE pr.product_id = b.product_id) * b.quantity
     ) AS total
     FROM basket b WHERE b.user_id = $uid
 ")->fetch_assoc()['total'] ?? 0;
-
-// ── TRIGGERED ALERTS ─────────────────────────────────────────
+ 
 $triggeredAlerts = $conn->query("
     SELECT a.*, p.name AS product_name, p.unit,
            s.name AS store_name,
@@ -39,195 +36,491 @@ $triggeredAlerts = $conn->query("
     ORDER BY a.triggered_at DESC
     LIMIT 3
 ")->fetch_all(MYSQLI_ASSOC);
-
-// ── TOP DEALS TODAY ───────────────────────────────────────────
+ 
 $topDeals = $conn->query("
     SELECT p.id, p.name, p.unit,
            MIN(pr.price) AS best_price,
            MAX(pr.price) AS worst_price,
-           s.name AS best_store
+           (MAX(pr.price) - MIN(pr.price)) AS savings,
+           (SELECT s.name FROM prices pr2 JOIN stores s ON pr2.store_id=s.id
+            WHERE pr2.product_id=p.id ORDER BY pr2.price ASC LIMIT 1) AS best_store
     FROM prices pr
     JOIN products p ON pr.product_id = p.id
-    JOIN stores s   ON pr.store_id   = s.id
     WHERE p.active = 1
     GROUP BY p.id
-    HAVING (worst_price - best_price) > 1500
-    ORDER BY (worst_price - best_price) DESC
+    HAVING (MAX(pr.price) - MIN(pr.price)) > 1500
+    ORDER BY (MAX(pr.price) - MIN(pr.price)) DESC
     LIMIT 6
 ")->fetch_all(MYSQLI_ASSOC);
-
-// ── RECENT BASKET ITEMS ───────────────────────────────────────
+ 
 $recentBasket = $conn->query("
     SELECT b.*, p.name AS product_name, p.unit,
-           (SELECT MIN(pr.price) FROM prices pr WHERE pr.product_id=b.product_id) AS best_price,
-           (SELECT s.name FROM prices pr JOIN stores s ON pr.store_id=s.id WHERE pr.product_id=b.product_id ORDER BY pr.price ASC LIMIT 1) AS best_store
+           (SELECT MIN(pr.price) FROM prices pr WHERE pr.product_id=b.product_id) AS best_price
     FROM basket b
     JOIN products p ON b.product_id = p.id
     WHERE b.user_id = $uid
     ORDER BY b.updated_at DESC
     LIMIT 4
 ")->fetch_all(MYSQLI_ASSOC);
-
-// Budget usage
-$budget     = (int)$user['budget'];
-$budgetUsed = (int)$basketTotal;
-$budgetPct  = $budget > 0 ? min(100, round(($budgetUsed / $budget) * 100)) : 0;
-
+ 
+$budget    = (int)($user['budget'] ?? 0);
+$budgetPct = $budget > 0 ? min(100, round(($basketTotal / $budget) * 100)) : 0;
+$budgetColor = $budgetPct > 90 ? 'var(--red)' : ($budgetPct > 70 ? 'var(--gold)' : 'var(--leaf)');
+ 
 include '../includes/header.php';
 ?>
-
-<div class="ph">
-  <div style="max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-    <div>
-      <h1>👋 Hello, <?= htmlspecialchars(explode(' ', $user['name'])[0]) ?>!</h1>
-      <p>Here's your SPECS dashboard — <?= $totalProds ?> products across <?= $totalStores ?> Mbarara stores</p>
+ 
+<style>
+/* ── DASHBOARD HERO ── */
+.dash-hero {
+  background: linear-gradient(135deg, var(--forest) 0%, #1e5c3a 60%, #2d7a50 100%);
+  padding: 32px 24px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.dash-hero::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  top: -120px; right: -80px;
+}
+.dash-hero::after {
+  content: '';
+  position: absolute;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(233,168,32,.08);
+  bottom: -60px; left: 10%;
+}
+.dash-hero-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.dash-greeting {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.dash-greeting span { color: var(--gold); }
+.dash-subtitle {
+  color: rgba(255,255,255,.6);
+  font-size: .88rem;
+  margin-bottom: 28px;
+}
+ 
+/* ── HERO STAT CARDS ── */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.hero-stat {
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  text-decoration: none;
+  transition: all .2s;
+  display: block;
+}
+.hero-stat:hover {
+  background: rgba(255,255,255,.18);
+  transform: translateY(-2px);
+}
+.hero-stat-icon { font-size: 1.3rem; margin-bottom: 6px; }
+.hero-stat-num {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--gold);
+  display: block;
+}
+.hero-stat-lbl {
+  font-size: .72rem;
+  color: rgba(255,255,255,.6);
+  font-weight: 600;
+}
+ 
+/* ── FLOATING CARDS ── */
+.dash-body {
+  max-width: 1240px;
+  margin: -48px auto 0;
+  padding: 0 24px 40px;
+  position: relative;
+  z-index: 2;
+}
+ 
+/* ── ALERT BANNER ── */
+.alert-banner {
+  background: linear-gradient(135deg, #1a5c2e, #2d8a4e);
+  border-radius: var(--r);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  border: 1.5px solid rgba(82,183,136,.4);
+}
+.alert-banner-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 12px;
+  font-size: .95rem;
+}
+.alert-banner-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,.1);
+  border-radius: var(--rs);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+.alert-banner-item:last-child { margin-bottom: 0; }
+ 
+/* ── MAIN GRID ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+ 
+/* ── DEALS CARD ── */
+.deals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.deal-item {
+  border: 1.5px solid var(--sand);
+  border-radius: var(--rs);
+  padding: 14px;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--cream);
+}
+.deal-item:hover {
+  border-color: var(--mint);
+  background: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(24,56,42,.08);
+}
+.deal-name { font-weight: 800; font-size: .86rem; margin-bottom: 2px; color: var(--ink); }
+.deal-unit { font-size: .72rem; color: var(--muted); margin-bottom: 10px; }
+.deal-price-best {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--leaf);
+}
+.deal-price-old {
+  font-size: .75rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  margin-top: 1px;
+}
+.deal-save-chip {
+  display: inline-block;
+  background: #d4edda;
+  color: #155724;
+  font-size: .65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 99px;
+  margin-top: 6px;
+}
+.deal-store { font-size: .7rem; color: var(--muted); margin-top: 4px; }
+ 
+/* ── RIGHT SIDEBAR ── */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+ 
+/* ── BUDGET CARD ── */
+.budget-card {
+  background: linear-gradient(135deg, var(--forest), #2a5e40);
+  border-radius: var(--r);
+  padding: 20px;
+  color: #fff;
+}
+.budget-title {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255,255,255,.5);
+  margin-bottom: 4px;
+}
+.budget-amount {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.budget-of { font-size: .78rem; color: rgba(255,255,255,.5); margin-bottom: 12px; }
+.budget-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,.15);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.budget-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .8s ease;
+}
+.budget-remaining { font-size: .75rem; color: rgba(255,255,255,.5); }
+ 
+/* ── BASKET CARD ── */
+.basket-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--sand);
+  font-size: .83rem;
+}
+.basket-item-row:last-child { border-bottom: none; }
+.basket-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 2px solid var(--sand);
+}
+ 
+/* ── QUICK LINKS ── */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.quick-link {
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--r);
+  padding: 18px;
+  text-decoration: none;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.quick-link:hover {
+  border-color: var(--mint);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(24,56,42,.08);
+}
+.ql-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.ql-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: .88rem;
+  margin-bottom: 2px;
+}
+.ql-desc { font-size: .72rem; color: var(--muted); line-height: 1.4; }
+ 
+@media(max-width:900px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .deals-grid { grid-template-columns: 1fr; }
+  .dash-hero { padding-bottom: 60px; }
+}
+@media(max-width:600px) {
+  .dash-greeting { font-size: 1.4rem; }
+  .hero-stats { grid-template-columns: repeat(2,1fr); }
+  .quick-links { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+ 
+<!-- HERO SECTION -->
+<div class="dash-hero">
+  <div class="dash-hero-inner">
+    <div class="dash-greeting">
+      👋 Hello, <span><?= htmlspecialchars(explode(' ', $user['name'])[0]) ?>!</span>
     </div>
-    <a href="browse.php" class="btn btn-primary">🛍️ Browse Products</a>
+    <div class="dash-subtitle">
+      Welcome to SPECS — <?= number_format($totalProds) ?> products tracked across <?= $totalStores ?> Mbarara stores
+    </div>
+ 
+    <!-- HERO STATS -->
+    <div class="hero-stats">
+      <a href="basket.php" class="hero-stat">
+        <div class="hero-stat-icon">🛒</div>
+        <span class="hero-stat-num"><?= $basketCount ?></span>
+        <span class="hero-stat-lbl">Basket Items</span>
+      </a>
+      <a href="alerts.php" class="hero-stat">
+        <div class="hero-stat-icon">🔔</div>
+        <span class="hero-stat-num"><?= $alertsCount ?></span>
+        <span class="hero-stat-lbl">Active Alerts</span>
+      </a>
+      <a href="browse.php" class="hero-stat">
+        <div class="hero-stat-icon">📦</div>
+        <span class="hero-stat-num"><?= number_format($totalProds) ?></span>
+        <span class="hero-stat-lbl">Products</span>
+      </a>
+      <a href="browse.php" class="hero-stat">
+        <div class="hero-stat-icon">🏬</div>
+        <span class="hero-stat-num"><?= $totalStores ?></span>
+        <span class="hero-stat-lbl">Stores</span>
+      </a>
+    </div>
   </div>
 </div>
-
-<div class="ctr">
+ 
+<!-- DASHBOARD BODY -->
+<div class="dash-body">
   <?php showFlash(); ?>
-
-  <!-- TRIGGERED ALERTS -->
+ 
+  <!-- TRIGGERED ALERTS BANNER -->
   <?php if (!empty($triggeredAlerts)): ?>
-  <div style="background:#d4edda;border:1.5px solid #a3d4b5;border-radius:var(--r);padding:16px 20px;margin-bottom:20px">
-    <div style="font-weight:800;color:#155724;margin-bottom:10px">🎉 Your price alerts have been triggered!</div>
+  <div class="alert-banner">
+    <div class="alert-banner-title">🎉 Your price alerts have been triggered!</div>
     <?php foreach ($triggeredAlerts as $ta): ?>
-    <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:var(--rs);padding:10px 14px;margin-bottom:8px">
+    <div class="alert-banner-item">
       <div>
-        <strong><?= htmlspecialchars($ta['product_name']) ?></strong>
-        <span style="color:var(--muted);font-size:.8rem"> (<?= $ta['unit'] ?>)</span>
-        <div style="font-size:.78rem;color:var(--muted)"><?= $ta['store_name'] ?? 'Any store' ?></div>
+        <div style="font-weight:800;color:#fff;font-size:.88rem"><?= htmlspecialchars($ta['product_name']) ?> <span style="color:rgba(255,255,255,.5);font-size:.76rem">(<?= $ta['unit'] ?>)</span></div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.5)"><?= $ta['store_name'] ?? 'Any store' ?></div>
       </div>
       <div style="text-align:right">
-        <div style="font-family:'Nunito',sans-serif;font-weight:900;color:var(--leaf)"><?= formatPrice($ta['current_price']) ?></div>
-        <div style="font-size:.74rem;color:var(--muted)">Target: <?= formatPrice($ta['target_price']) ?></div>
+        <div style="font-family:'Nunito',sans-serif;font-weight:900;color:var(--gold)"><?= formatPrice($ta['current_price']) ?></div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.45)">Target: <?= formatPrice($ta['target_price']) ?></div>
       </div>
     </div>
     <?php endforeach; ?>
   </div>
   <?php endif; ?>
-
-  <!-- STAT CARDS -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px">
-    <?php
-    $cards = [
-      ['🛒', 'Basket Items',   $basketCount,             'basket.php',  'var(--forest)'],
-      ['🔔', 'Active Alerts',  $alertsCount,             'alerts.php',  'var(--gold)'],
-      ['📦', 'Products',       number_format($totalProds), 'browse.php', 'var(--leaf)'],
-      ['🏬', 'Stores',         $totalStores,             'browse.php',  '#2196F3'],
-    ];
-    foreach ($cards as $c): ?>
-    <a href="<?= $c[3] ?>" style="text-decoration:none">
-      <div style="background:var(--white);border:1.5px solid var(--sand);border-radius:var(--r);padding:18px;transition:all .2s"
-           onmouseover="this.style.borderColor='<?= $c[4] ?>'" onmouseout="this.style.borderColor='var(--sand)'">
-        <div style="font-size:1.4rem;margin-bottom:6px"><?= $c[0] ?></div>
-        <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.5rem;color:<?= $c[4] ?>"><?= $c[2] ?></div>
-        <div style="font-size:.74rem;color:var(--muted);font-weight:600"><?= $c[1] ?></div>
-      </div>
-    </a>
-    <?php endforeach; ?>
-  </div>
-
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px">
-
-    <!-- TOP DEALS -->
+ 
+  <!-- MAIN GRID -->
+  <div class="dash-grid">
+ 
+    <!-- LEFT: TOP DEALS -->
     <div class="card">
-      <div class="card-title">🔥 Best Deals Right Now</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <?php foreach ($topDeals as $d):
-          $save = $d['worst_price'] - $d['best_price'];
-        ?>
-        <div style="border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px;transition:all .2s;cursor:pointer"
-             onclick="window.location='browse.php?q=<?= urlencode($d['name']) ?>'"
-             onmouseover="this.style.borderColor='var(--mint)'" onmouseout="this.style.borderColor='var(--sand)'">
-          <div style="font-weight:700;font-size:.86rem;margin-bottom:4px"><?= htmlspecialchars($d['name']) ?></div>
-          <div style="font-size:.74rem;color:var(--muted);margin-bottom:8px"><?= htmlspecialchars($d['unit']) ?></div>
-          <div style="font-family:'Nunito',sans-serif;font-weight:900;color:var(--leaf);font-size:1rem"><?= formatPrice($d['best_price']) ?></div>
-          <div style="font-size:.74rem;color:var(--muted);text-decoration:line-through"><?= formatPrice($d['worst_price']) ?></div>
-          <span style="background:#d4edda;color:#155724;font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:99px;margin-top:5px;display:inline-block">
-            Save <?= formatPrice($save) ?>
-          </span>
-          <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Best: <?= htmlspecialchars($d['best_store']) ?></div>
+      <div class="card-title">
+        🔥 Best Deals Right Now
+        <a href="browse.php?sort=savings" style="float:right;font-size:.72rem;color:var(--leaf);font-weight:700">See all →</a>
+      </div>
+      <?php if (empty($topDeals)): ?>
+        <div class="empty-state"><div class="ei">🛍️</div><p>No deals found.</p></div>
+      <?php else: ?>
+      <div class="deals-grid">
+        <?php foreach ($topDeals as $d): ?>
+        <div class="deal-item" onclick="window.location='browse.php?q=<?= urlencode($d['name']) ?>'">
+          <div class="deal-name"><?= htmlspecialchars($d['name']) ?></div>
+          <div class="deal-unit"><?= htmlspecialchars($d['unit']) ?></div>
+          <div class="deal-price-best"><?= formatPrice($d['best_price']) ?></div>
+          <div class="deal-price-old"><?= formatPrice($d['worst_price']) ?></div>
+          <span class="deal-save-chip">Save <?= formatPrice($d['savings']) ?></span>
+          <div class="deal-store">📍 <?= htmlspecialchars($d['best_store']) ?></div>
         </div>
         <?php endforeach; ?>
       </div>
-      <div style="margin-top:14px">
-        <a href="browse.php" class="btn btn-green btn-sm">See All Products →</a>
+      <?php endif; ?>
+      <div style="margin-top:16px">
+        <a href="browse.php" class="btn btn-green btn-sm">🛍️ Browse All <?= number_format($totalProds) ?> Products →</a>
       </div>
     </div>
-
-    <!-- RIGHT COLUMN -->
-    <div style="display:flex;flex-direction:column;gap:18px">
-
-      <!-- BUDGET TRACKER -->
+ 
+    <!-- RIGHT SIDEBAR -->
+    <div class="sidebar">
+ 
+      <!-- BUDGET CARD -->
       <?php if ($budget > 0): ?>
-      <div class="card">
-        <div class="card-title">💰 Monthly Budget</div>
-        <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.4rem;color:var(--forest)"><?= formatPrice($budgetUsed) ?></div>
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">of <?= formatPrice($budget) ?> budget</div>
-        <div style="height:8px;background:var(--sand);border-radius:99px;overflow:hidden;margin-bottom:6px">
-          <div style="height:100%;width:<?= $budgetPct ?>%;background:<?= $budgetPct>90?'var(--red)':($budgetPct>70?'var(--gold)':'var(--leaf)') ?>;border-radius:99px;transition:width .5s"></div>
+      <div class="budget-card">
+        <div class="budget-title">💰 Monthly Budget</div>
+        <div class="budget-amount"><?= formatPrice($basketTotal) ?></div>
+        <div class="budget-of">of <?= formatPrice($budget) ?> budget</div>
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" style="width:<?= $budgetPct ?>%;background:<?= $budgetColor ?>"></div>
         </div>
-        <div style="font-size:.76rem;color:var(--muted)"><?= $budgetPct ?>% used · <?= formatPrice(max(0,$budget-$budgetUsed)) ?> remaining</div>
+        <div class="budget-remaining"><?= $budgetPct ?>% used · <?= formatPrice(max(0, $budget - $basketTotal)) ?> remaining</div>
       </div>
       <?php else: ?>
-      <div class="card">
+      <div class="card" style="border-left:4px solid var(--gold)">
         <div class="card-title">💰 Budget Tracker</div>
-        <div style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Set a monthly budget to track your spending.</div>
-        <a href="account.php" class="btn btn-sm btn-primary">Set Budget</a>
+        <div style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Set a monthly budget to track your grocery spending.</div>
+        <a href="account.php" class="btn btn-primary btn-sm">Set My Budget</a>
       </div>
       <?php endif; ?>
-
-      <!-- RECENT BASKET -->
+ 
+      <!-- BASKET CARD -->
       <div class="card">
-        <div class="card-title">🛒 Your Basket</div>
+        <div class="card-title">
+          🛒 My Basket
+          <?php if (!empty($recentBasket)): ?>
+          <a href="basket.php" style="float:right;font-size:.72rem;color:var(--leaf);font-weight:700">View all →</a>
+          <?php endif; ?>
+        </div>
         <?php if (empty($recentBasket)): ?>
-          <div style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Your basket is empty.</div>
-          <a href="browse.php" class="btn btn-sm btn-green">Start Shopping</a>
+          <div style="font-size:.83rem;color:var(--muted);margin-bottom:12px;text-align:center;padding:16px 0">
+            <div style="font-size:1.8rem;margin-bottom:8px">🛒</div>
+            Your basket is empty
+          </div>
+          <a href="browse.php" class="btn btn-green btn-sm" style="width:100%;justify-content:center">Start Shopping</a>
         <?php else: ?>
           <?php foreach ($recentBasket as $bi): ?>
-          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--sand);font-size:.83rem">
+          <div class="basket-item-row">
             <div>
-              <strong><?= htmlspecialchars($bi['product_name']) ?></strong>
-              <span style="color:var(--muted)"> ×<?= $bi['quantity'] ?></span>
+              <div style="font-weight:700"><?= htmlspecialchars($bi['product_name']) ?></div>
+              <div style="font-size:.72rem;color:var(--muted)"><?= htmlspecialchars($bi['unit']) ?> × <?= $bi['quantity'] ?></div>
             </div>
-            <div style="font-weight:700;color:var(--leaf)"><?= formatPrice($bi['best_price'] * $bi['quantity']) ?></div>
+            <div style="font-weight:800;color:var(--leaf)"><?= formatPrice($bi['best_price'] * $bi['quantity']) ?></div>
           </div>
           <?php endforeach; ?>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-            <strong style="font-size:.85rem">Total: <?= formatPrice($basketTotal) ?></strong>
-            <a href="basket.php" class="btn btn-sm btn-primary">View Basket</a>
+          <div class="basket-total-row">
+            <div>
+              <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase">Best Total</div>
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;color:var(--forest)"><?= formatPrice($basketTotal) ?></div>
+            </div>
+            <a href="basket.php" class="btn btn-primary btn-sm">View Basket</a>
           </div>
         <?php endif; ?>
       </div>
-
+ 
     </div>
   </div>
-
+ 
   <!-- QUICK LINKS -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
-    <?php
-    $links = [
-      ['🛍️','Browse Products',  'browse.php',  'Browse 205+ products and compare prices across all stores'],
-      ['🛒','My Basket',        'basket.php',  'View your saved items and get the best store recommendation'],
-      ['🔔','Price Alerts',     'alerts.php',  'Set target prices and get notified when products drop'],
-      ['📈','Price Trends',     'trends.php',  'See how prices have changed over the past 6 months'],
-      ['👤','My Account',       'account.php', 'Update your profile, budget and preferences'],
-    ];
-    foreach ($links as $l): ?>
-    <a href="<?= $l[2] ?>" style="text-decoration:none">
-      <div style="background:var(--white);border:1.5px solid var(--sand);border-radius:var(--r);padding:20px;transition:all .2s"
-           onmouseover="this.style.transform='translateY(-2px)';this.style.borderColor='var(--mint)'"
-           onmouseout="this.style.transform='';this.style.borderColor='var(--sand)'">
-        <div style="font-size:1.6rem;margin-bottom:8px"><?= $l[0] ?></div>
-        <div style="font-family:'Nunito',sans-serif;font-weight:800;margin-bottom:5px"><?= $l[1] ?></div>
-        <div style="font-size:.78rem;color:var(--muted);line-height:1.5"><?= $l[3] ?></div>
-      </div>
-    </a>
-    <?php endforeach; ?>
+  <div style="margin-bottom:8px">
+    <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;color:var(--ink);margin-bottom:14px">Quick Links</div>
+    <div class="quick-links">
+      <?php
+      $links = [
+        ['🛍️', 'Browse Products',  'browse.php',  'Search & compare prices'],
+        ['🛒', 'My Basket',        'basket.php',  'View items & save plan'],
+        ['🔔', 'Price Alerts',     'alerts.php',  'Set & manage alerts'],
+        ['📈', 'Price Trends',     'trends.php',  'Track price history'],
+        ['👤', 'My Account',       'account.php', 'Profile & settings'],
+      ];
+      foreach ($links as $l): ?>
+      <a href="<?= $l[2] ?>" class="quick-link">
+        <div class="ql-icon"><?= $l[0] ?></div>
+        <div>
+          <div class="ql-title"><?= $l[1] ?></div>
+          <div class="ql-desc"><?= $l[3] ?></div>
+        </div>
+      </a>
+      <?php endforeach; ?>
+    </div>
   </div>
+ 
 </div>
-
+ 
 <?php include '../includes/footer.php'; ?>
+ 

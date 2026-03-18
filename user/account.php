@@ -9,6 +9,11 @@ $pageTitle = 'My Account';
 $uid       = (int)$_SESSION['user_id'];
 $user      = getCurrentUser();
 
+// Fetch full user record from DB (includes created_at, last_login etc)
+$dbUser = $conn->query("SELECT * FROM users WHERE id=$uid")->fetch_assoc();
+$user["created_at"] = $dbUser["created_at"] ?? date("Y-m-d H:i:s");
+$user["last_login"]  = $dbUser["last_login"]  ?? null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
@@ -73,7 +78,7 @@ include '../includes/header.php';
     <div style="flex:1">
       <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.3rem;color:#fff"><?= htmlspecialchars($user['name']) ?></div>
       <div style="color:rgba(255,255,255,.6);font-size:.85rem"><?= htmlspecialchars($user['email']) ?></div>
-      <div style="color:rgba(255,255,255,.45);font-size:.76rem;margin-top:3px">Member since <?= date('F Y', strtotime($user['created_at'])) ?></div>
+      <div style="color:rgba(255,255,255,.45);font-size:.76rem;margin-top:3px">Member since <?= date('F Y', strtotime($dbUser['created_at'] ?? 'now')) ?></div>
     </div>
     <div style="display:flex;gap:16px">
       <?php

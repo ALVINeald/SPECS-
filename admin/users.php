@@ -41,13 +41,96 @@ $users = $conn->query("
     ORDER BY u.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
+// ── USER STATS ────────────────────────────────────────────────
+$statsAll      = $conn->query("SELECT COUNT(*) AS t FROM users")->fetch_assoc()['t'];
+$statsConsumers= $conn->query("SELECT COUNT(*) AS t FROM users WHERE role='user'")->fetch_assoc()['t'];
+$statsAdmins   = $conn->query("SELECT COUNT(*) AS t FROM users WHERE role='admin' OR role='manager'")->fetch_assoc()['t'];
+$statsActive   = $conn->query("SELECT COUNT(*) AS t FROM users WHERE is_active=1")->fetch_assoc()['t'];
+$statsInactive = $conn->query("SELECT COUNT(*) AS t FROM users WHERE is_active=0")->fetch_assoc()['t'];
+$statsToday    = $conn->query("SELECT COUNT(*) AS t FROM users WHERE DATE(created_at)=CURDATE()")->fetch_assoc()['t'];
+$statsBaskets  = $conn->query("SELECT COUNT(DISTINCT user_id) AS t FROM basket")->fetch_assoc()['t'];
+$statsAlerts   = $conn->query("SELECT COUNT(DISTINCT user_id) AS t FROM alerts WHERE is_active=1")->fetch_assoc()['t'];
+
 include '../includes/header.php';
 ?>
 
 <div class="ph">
   <div style="max-width:1240px;margin:0 auto">
     <h1>👥 Users</h1>
-    <p><?= count($users) ?> users found</p>
+    <p><?= count($users) ?> users shown · <?= $statsAll ?> total registered</p>
+  </div>
+</div>
+
+<!-- USER STAT CARDS -->
+<div style="background:var(--white);border-bottom:1.5px solid var(--sand);padding:16px 24px">
+  <div style="max-width:1240px;margin:0 auto;display:flex;gap:12px;flex-wrap:wrap">
+
+    <div style="display:flex;align-items:center;gap:10px;background:var(--cream);border:1.5px solid var(--sand);border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">👥</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:var(--forest)"><?= $statsAll ?></div>
+        <div style="font-size:.68rem;color:var(--muted);font-weight:600">Total Users</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1.5px solid #a3d4b5;border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">✅</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:var(--leaf)"><?= $statsActive ?></div>
+        <div style="font-size:.68rem;color:#155724;font-weight:600">Active</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:#fdf0f0;border:1.5px solid #f5c6c6;border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">❌</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:var(--red)"><?= $statsInactive ?></div>
+        <div style="font-size:.68rem;color:#721c24;font-weight:600">Inactive</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:#fff3cd;border:1.5px solid #ffd666;border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">🛍️</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:#856404"><?= $statsConsumers ?></div>
+        <div style="font-size:.68rem;color:#856404;font-weight:600">Consumers</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:#cce5ff;border:1.5px solid #99caff;border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">🔑</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:#004085"><?= $statsAdmins ?></div>
+        <div style="font-size:.68rem;color:#004085;font-weight:600">Admins</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:var(--cream);border:1.5px solid var(--sand);border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">🛒</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:var(--forest)"><?= $statsBaskets ?></div>
+        <div style="font-size:.68rem;color:var(--muted);font-weight:600">Have Baskets</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:var(--cream);border:1.5px solid var(--sand);border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">🔔</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:var(--gold)"><?= $statsAlerts ?></div>
+        <div style="font-size:.68rem;color:var(--muted);font-weight:600">Have Alerts</div>
+      </div>
+    </div>
+
+    <?php if ($statsToday > 0): ?>
+    <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--forest),var(--leaf));border-radius:var(--r);padding:12px 18px;flex:1;min-width:130px">
+      <div style="font-size:1.4rem">🆕</div>
+      <div>
+        <div style="font-family:Nunito,sans-serif;font-weight:900;font-size:1.4rem;color:var(--gold)"><?= $statsToday ?></div>
+        <div style="font-size:.68rem;color:rgba(255,255,255,.7);font-weight:600">Joined Today</div>
+      </div>
+    </div>
+    <?php endif; ?>
+
   </div>
 </div>
 
