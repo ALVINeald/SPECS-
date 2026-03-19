@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     body{
       font-family:'Nunito Sans',sans-serif;
       min-height:100vh;display:flex;background:var(--cream);
+      position:relative;
     }
     .left-panel{
       width:42%;background:linear-gradient(160deg,var(--forest),var(--leaf));
@@ -167,6 +168,195 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .login-link a{color:var(--leaf);font-weight:800;font-family:'Nunito',sans-serif}
 
+
+    /* ══════════════════════════════
+       GLASS TERMS MODAL
+    ══════════════════════════════ */
+    #terms-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #terms-overlay.open { display: flex; }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    #terms-glass {
+      width: 100%;
+      max-width: 560px;
+      max-height: 88vh;
+      background: rgba(24, 56, 42, 0.82);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 64px rgba(0,0,0,.5);
+      animation: glassSlideUp .32s cubic-bezier(.34,1.2,.64,1);
+    }
+
+    @keyframes glassSlideUp {
+      from { transform: translateY(40px) scale(.97); opacity: 0; }
+      to   { transform: translateY(0)    scale(1);   opacity: 1; }
+    }
+
+    .tg-header {
+      padding: 22px 26px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      flex-shrink: 0;
+    }
+    .tg-logo {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: var(--gold);
+      margin-bottom: 2px;
+    }
+    .tg-logo em { color: #fff; font-style: normal; }
+    .tg-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+    .tg-date { font-size: .72rem; color: rgba(255,255,255,.45); }
+
+    .tg-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 26px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.2) transparent;
+    }
+    .tg-body::-webkit-scrollbar { width: 5px; }
+    .tg-body::-webkit-scrollbar-track { background: transparent; }
+    .tg-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 99px; }
+
+    .tg-section { margin-bottom: 20px; }
+    .tg-section-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: .88rem;
+      color: var(--gold);
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tg-section p {
+      font-size: .82rem;
+      color: rgba(255,255,255,.8);
+      line-height: 1.7;
+    }
+    .tg-section ul {
+      list-style: none;
+      padding: 0;
+    }
+    .tg-section ul li {
+      font-size: .82rem;
+      color: rgba(255,255,255,.8);
+      line-height: 1.7;
+      padding: 3px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+    .tg-section ul li::before {
+      content: '›';
+      color: var(--gold);
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .tg-divider {
+      height: 1px;
+      background: rgba(255,255,255,.1);
+      margin: 16px 0;
+    }
+
+    .tg-footer {
+      padding: 16px 26px 22px;
+      border-top: 1px solid rgba(255,255,255,.12);
+      flex-shrink: 0;
+    }
+    .tg-agree-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 12px;
+      padding: 13px 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .tg-agree-row input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--gold);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .tg-agree-label {
+      font-size: .84rem;
+      color: rgba(255,255,255,.85);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tg-btn-accept {
+      width: 100%;
+      background: var(--gold);
+      color: var(--forest);
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: .95rem;
+      cursor: pointer;
+      transition: all .2s;
+      opacity: .5;
+      pointer-events: none;
+    }
+    .tg-btn-accept.ready {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .tg-btn-accept.ready:hover {
+      background: #f0b422;
+      transform: translateY(-1px);
+    }
+    .tg-btn-close {
+      width: 100%;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.6);
+      border-radius: 12px;
+      padding: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: .82rem;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all .18s;
+    }
+    .tg-btn-close:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+    @media(max-width:480px) {
+      #terms-glass { border-radius: 20px 20px 0 0; }
+      #terms-overlay { align-items: flex-end; padding: 0; }
+    }
     @media(max-width:768px){
       .left-panel{display:none}
       .right-panel{padding:30px 20px}
@@ -258,12 +448,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
 
+      <!-- TERMS ROW -->
       <div class="terms-row">
         <input type="checkbox" id="terms" required/>
         <label for="terms">
-          I agree to the <a href="#">Terms of Service</a> and 
-          <a href="#">Privacy Policy</a>
+          I have read and agree to the
+          <a href="#" onclick="openTerms(event)">Terms &amp; Conditions</a>
         </label>
+      </div>
+      <div id="terms-hint" style="font-size:.72rem;color:var(--muted);margin-top:4px;display:none">
+        ✅ You have agreed to the Terms &amp; Conditions
       </div>
 
       <button type="submit" class="btn-register">Create My Account →</button>
@@ -316,5 +510,180 @@ function googleRegister() {
   alert('Google Sign-up requires Google OAuth setup.\nUse email/password for now.\n\nSetup: console.cloud.google.com');
 }
 </script>
+
+<!-- ══════════════════════════════
+     TERMS & CONDITIONS GLASS MODAL
+══════════════════════════════ -->
+<div id="terms-overlay" onclick="handleOverlayClick(event)">
+  <div id="terms-glass">
+
+    <!-- HEADER -->
+    <div class="tg-header">
+      <div class="tg-logo">SP<em>EC</em>S</div>
+      <div class="tg-title">Terms &amp; Conditions</div>
+      <div class="tg-date">Effective Date: March 2026 &nbsp;·&nbsp; Mbarara City, Uganda</div>
+    </div>
+
+    <!-- SCROLLABLE BODY -->
+    <div class="tg-body">
+
+      <div class="tg-section">
+        <div class="tg-section-title">📋 1. About SPECS</div>
+        <p>SPECS (Supermarket Pricing Estimation &amp; Comparison System) is a free price comparison platform built for shoppers in Mbarara City, Uganda. SPECS helps you compare product prices across supermarkets, track price trends, set price alerts and plan your shopping route to save money.</p>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">✅ 2. Acceptance of Terms</div>
+        <p>By creating a SPECS account and using this system, you confirm that:</p>
+        <ul>
+          <li>You are at least 18 years of age or have parental consent</li>
+          <li>The information you provide during registration is accurate and truthful</li>
+          <li>You will use SPECS only for lawful personal shopping purposes</li>
+          <li>You agree to be bound by these Terms &amp; Conditions</li>
+        </ul>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">🛒 3. Use of the System</div>
+        <p>SPECS grants you a free, non-exclusive licence to use the platform. You agree not to:</p>
+        <ul>
+          <li>Attempt to hack, modify or reverse-engineer the system</li>
+          <li>Upload false, misleading or harmful content</li>
+          <li>Use automated bots or scrapers to extract price data</li>
+          <li>Impersonate another user or SPECS administrator</li>
+          <li>Use the system for any commercial resale purpose without written consent</li>
+        </ul>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">💰 4. Price Data Accuracy</div>
+        <p>Prices displayed on SPECS are collected and updated by our administrators. While we strive for accuracy, SPECS does not guarantee that prices shown reflect real-time store prices at the time of your visit. Always verify prices in-store before making a purchase decision.</p>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">🔒 5. Privacy &amp; Data</div>
+        <p>SPECS collects your name, email address and shopping preferences to provide personalised services. We do not sell your personal data to third parties. Your data is stored securely and used only to improve your experience on the platform.</p>
+        <ul>
+          <li>Your basket and alert data is private and visible only to you</li>
+          <li>Administrators can view anonymised usage statistics</li>
+          <li>You may delete your account at any time from Account Settings</li>
+        </ul>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">🔔 6. Price Alerts</div>
+        <p>Price alerts are a courtesy notification service. SPECS does not guarantee delivery of alerts at any specific time. Alert triggers depend on when administrators update prices in the system. You may set or remove alerts at any time from your dashboard.</p>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">⚠️ 7. Limitation of Liability</div>
+        <p>SPECS is provided "as is" for informational and educational purposes. We are not liable for any financial loss, incorrect purchases or decisions made based on prices displayed on the platform. Use of SPECS is entirely at your own discretion.</p>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">📝 8. Changes to Terms</div>
+        <p>SPECS reserves the right to update these Terms &amp; Conditions at any time. Continued use of the platform after changes are posted constitutes your acceptance of the new terms. We will notify users of significant changes via email.</p>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">📍 9. Governing Law</div>
+        <p>These terms are governed by the laws of the Republic of Uganda. Any disputes arising from the use of SPECS shall be subject to the jurisdiction of courts in Mbarara City, Uganda.</p>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <div class="tg-section">
+        <div class="tg-section-title">📬 10. Contact</div>
+        <p>For questions about these Terms &amp; Conditions, contact the SPECS team at <strong style="color:var(--gold)">admin@specs.ug</strong> or visit Bishop Stuart University, Mbarara.</p>
+      </div>
+
+    </div>
+
+    <!-- FOOTER: AGREE + BUTTONS -->
+    <div class="tg-footer">
+      <div class="tg-agree-row" onclick="toggleAgree()">
+        <input type="checkbox" id="modalAgree" onchange="toggleAcceptBtn()"/>
+        <label class="tg-agree-label" for="modalAgree">
+          I have read and understood the Terms &amp; Conditions and agree to be bound by them
+        </label>
+      </div>
+      <button class="tg-btn-accept" id="acceptBtn" onclick="acceptTerms()">
+        ✅ I Agree — Continue Registration
+      </button>
+      <button class="tg-btn-close" onclick="closeTerms()">
+        Close without agreeing
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openTerms(e) {
+  e.preventDefault();
+  document.getElementById('terms-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Reset modal state
+  document.getElementById('modalAgree').checked = false;
+  document.getElementById('acceptBtn').classList.remove('ready');
+}
+
+function closeTerms() {
+  document.getElementById('terms-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('terms-overlay')) closeTerms();
+}
+
+function toggleAgree() {
+  const cb = document.getElementById('modalAgree');
+  cb.checked = !cb.checked;
+  toggleAcceptBtn();
+}
+
+function toggleAcceptBtn() {
+  const cb  = document.getElementById('modalAgree');
+  const btn = document.getElementById('acceptBtn');
+  btn.classList.toggle('ready', cb.checked);
+}
+
+function acceptTerms() {
+  if (!document.getElementById('modalAgree').checked) return;
+
+  // Tick the register form checkbox
+  const regCheckbox = document.getElementById('terms');
+  regCheckbox.checked = true;
+
+  // Show hint
+  const hint = document.getElementById('terms-hint');
+  hint.style.display = 'block';
+
+  closeTerms();
+}
+
+// Escape key closes
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeTerms();
+});
+</script>
+
 </body>
 </html>
