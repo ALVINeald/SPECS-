@@ -11,7 +11,7 @@ require_once 'includes/functions.php';
 if (isLoggedIn()) {
     redirect(isAdmin() ? 'admin/index.php' : 'user/index.php');
 }
-
+// @ Alvin works | all the above is the same as the login and register page, we just check if the user is already logged in, if they are we redirect them to their respective dashboard, if not we show them the homepage with all the stats and info about the app
 // Get live stats from database
 $totalProducts = $conn->query("SELECT COUNT(*) AS t FROM products WHERE active=1")->fetch_assoc()['t'];
 $totalStores   = $conn->query("SELECT COUNT(*) AS t FROM stores WHERE active=1")->fetch_assoc()['t'];
@@ -34,7 +34,7 @@ $deals = $conn->query("
     ORDER BY (MAX(pr.price) - MIN(pr.price)) DESC
     LIMIT 6
 ")->fetch_all(MYSQLI_ASSOC);
-
+//@Alvin works | the above query gets the products with the biggest price differences across stores, we join the prices with products and stores to get the product name and the store name for the best price, we filter for active products and we only show products with a savings of more than 2000 UGX, we order by savings in descending order and limit to 6 deals
 // Get stores
 $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")->fetch_all(MYSQLI_ASSOC);
 ?>
@@ -78,6 +78,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     .btn-outline:hover{background:rgba(255,255,255,.2)}
     .btn-gold{background:var(--gold);color:var(--forest)}
     .btn-gold:hover{background:#d4940f}
+
 
     /* ── HERO ── */
     .hero{
@@ -315,6 +316,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
   </style>
 </head>
 <body>
+  // @Alvin works | the above styles are for the entire homepage, we use a combination of CSS Grid and Flexbox to create a responsive layout, we have a fixed navigation bar at the top, a hero section with a background gradient and some decorative circles, a stats bar that shows live numbers from the database, sections for how it works, top deals, stores and features, and a call to action at the bottom before the footer
 
 <!-- NAVIGATION -->
 <nav>
@@ -393,7 +395,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     </div>
   </div>
 </section>
-
+<!-- @Alvin works | the above hero section has a left side with the main headline, subtext and call to action buttons, and a right side with a visual card showing live price comparisons for popular products like cooking oil, bread and milk, we use PHP to query the database for the latest prices for these products and display them in the hero section to immediately show the value of the app to new visitors -->
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stats-inner">
@@ -403,7 +405,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     <div class="stat-item"><span class="stat-num">UGX</span><span class="stat-lbl">All Prices in Shillings</span></div>
   </div>
 </div>
-
+<!-- @Alvin works | the stats bar is a simple horizontal section that shows some key numbers about the app, we pull these numbers from the database to show live stats about how many products, stores and price records we have, this helps build trust and credibility with new visitors by showing that we have a large and growing database of prices for Mbarara supermarkets -->
 <!-- HOW IT WORKS -->
 <section>
   <div class="sec-inner">
@@ -434,7 +436,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     </div>
   </div>
 </section>
-
+<!-- @Alvin works | the how it works section breaks down the main features of the app into simple steps with icons and descriptions, this helps new visitors quickly understand the value proposition and how they can use the app to save money on their grocery shopping in Mbarara -->
 <!-- TOP DEALS -->
 <?php if (!empty($deals)): ?>
 <section style="background:var(--white);border-top:1.5px solid var(--sand);border-bottom:1.5px solid var(--sand)">
@@ -468,7 +470,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
   </div>
 </section>
 <?php endif; ?>
-
+<!-- @Alvin works | the top deals section highlights some of the products with the biggest price differences across stores, we use a PHP loop to display these deals in a grid format, showing the product name, unit, best and worst prices, potential savings and which store has the best price, this serves as a powerful demonstration of the value of the app by showing real examples of how much money shoppers can save by using SPECS to compare prices before they buy -->
 <!-- STORES -->
 <section>
   <div class="sec-inner">
@@ -489,7 +491,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     </div>
   </div>
 </section>
-
+<!-- @Alvin works | the stores section shows all the supermarkets in Mbarara that we track prices for, we use a PHP loop to display each store in a card format with an icon representing their tier (premium, mid-range, budget, market), their name, address and tier badge, this helps build trust with users by showing that we have comprehensive coverage of all the major stores in the city and that they can rely on our price comparisons to be accurate and up to date across all these locations -->
 <!-- FEATURES -->
 <section class="features-bg">
   <div class="sec-inner">
@@ -506,7 +508,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     </div>
   </div>
 </section>
-
+<!-- @Alvin works | the features section highlights the key features of the app in a visually appealing way, we use icons and short descriptions to quickly communicate the value of each feature, this helps new visitors understand all the different ways they can use SPECS to save money and shop smarter in Mbarara -->
 <!-- CTA -->
 <div class="cta-section">
   <h2>Ready to start saving? 🚀</h2>
@@ -514,19 +516,19 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
   <a href="register.php" class="btn-cta">Create Free Account</a>
   <a href="login.php"    class="btn-cta-outline">Sign In</a>
 </div>
-
+<!--@Alvin works | the call to action section is the final section of the homepage that encourages visitors to take action and sign up for the app, we use a strong headline, a supportive subtext and clear buttons to guide users towards creating an account or signing in if they already have one, this is important to convert visitors into users and start building our user base in Mbarara -->
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
     <div>
       <span class="footer-brand">SPECS</span>
-      <span style="font-size:.8rem"> — Supermarket Pricing Estimation & Comparison System</span>
+      <span style="font-size:.8rem"> | Supermarket Pricing Estimation & Comparison System</span>
     </div>
     <div style="font-size:.76rem">
-      Built by <strong style="color:var(--gold)">Mbabazi Alvin</strong> · 24/BSU/DIT/3253 · Bishop Stuart University · Mbarara
+      Built by <strong style="color:var(--gold)">Mbabazi Alvin &</strong> · 24/BSU/DIT/3253 · Bishop Stuart University · Mbarara
     </div>
   </div>
 </footer>
-
+<!-- @Alvin works | the footer provides some basic information about the app and credits the creator, it also reinforces the branding with the app name and a tagline, this helps create a sense of legitimacy and professionalism for new visitors who scroll down to the bottom of the page -->
 </body>
 </html>
