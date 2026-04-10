@@ -330,7 +330,7 @@ include '../includes/header.php';
   <div style="max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
     <div>
       <h1>🛍️ Browse Products</h1>
-      <p><?= count($products) ?> products found · Tap "Compare Stores" on any product</p>
+      <p><?= count($products) ?> products found · Tap "Compare Stores to compare prices in each store" on any product</p>
     </div>
     <a href="basket.php" class="btn btn-primary btn-sm">🛒 View Basket</a>
   </div>

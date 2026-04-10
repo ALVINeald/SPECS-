@@ -355,7 +355,7 @@ include '../includes/header.php';
       👋 Hello, <span><?= htmlspecialchars(explode(' ', $user['name'])[0]) ?>!</span>
     </div>
     <div class="dash-subtitle">
-      Welcome to SPECS — <?= number_format($totalProds) ?> products tracked across <?= $totalStores ?> Mbarara stores
+      Welcome to SPECS - <?= number_format($totalProds) ?> products tracked across <?= $totalStores ?> Mbarara stores
     </div>
  
     <!-- HERO STATS -->

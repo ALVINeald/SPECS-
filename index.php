@@ -333,7 +333,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
     <div class="hero-text">
       <div class="hero-badge">🇺🇬 Mbarara City · Uganda</div>
       <h1>Stop <em>Overpaying</em><br>at Mbarara Supermarkets</h1>
-      <p>Compare prices across <?= $totalStores ?> supermarkets, track price trends, set alerts and build a smart shopping plan — all in one free app.</p>
+      <p>Compare prices across <?= $totalStores ?> supermarkets, track price trends, set alerts and build a smart shopping plan - all in one free app.</p>
       <div class="hero-btns">
         <a href="register.php" class="btn-hero-primary">Start Saving Free →</a>
         <a href="login.php"    class="btn-hero-secondary">Sign In</a>
@@ -525,7 +525,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
       <span style="font-size:.8rem"> | Supermarket Pricing Estimation & Comparison System</span>
     </div>
     <div style="font-size:.76rem">
-      Built by <strong style="color:var(--gold)">Mbabazi Alvin &</strong> · 24/BSU/DIT/3253 · Bishop Stuart University · Mbarara
+      Built by <strong style="color:var(--gold)"><!--Mbabazi Alvin & --> GROUP 6</strong> · <!--24/BSU/DIT/3253 --> · Bishop Stuart University · Mbarara
     </div>
   </div>
 </footer>

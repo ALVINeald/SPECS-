@@ -371,32 +371,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="perk">
     <span class="perk-icon">🆓</span>
-    <span class="perk-text"><strong>Completely Free</strong> — No subscription needed</span>
+    <span class="perk-text"><strong>Completely Free</strong> - No subscription needed</span>
   </div>
   <div class="perk">
     <span class="perk-icon">🏪</span>
-    <span class="perk-text"><strong>7 Supermarkets</strong> — All major Mbarara stores</span>
+    <span class="perk-text"><strong>7 Supermarkets</strong> - All major Mbarara stores</span>
   </div>
   <div class="perk">
     <span class="perk-icon">📦</span>
-    <span class="perk-text"><strong>205+ Products</strong> — Updated regularly</span>
+    <span class="perk-text"><strong>205+ Products</strong> - Updated regularly</span>
   </div>
   <div class="perk">
     <span class="perk-icon">🔔</span>
-    <span class="perk-text"><strong>Price Alerts</strong> — Know when prices drop</span>
+    <span class="perk-text"><strong>Price Alerts</strong> - Know when prices drop</span>
   </div>
   <div class="perk">
     <span class="perk-icon">🧾</span>
-    <span class="perk-text"><strong>Shopping Plans</strong> — Save and share your list</span>
+    <span class="perk-text"><strong>Shopping Plans</strong> - Save and share your list</span>
   </div>
   <div class="perk">
     <span class="perk-icon">💰</span>
-    <span class="perk-text"><strong>Budget Tracker</strong> — Stay within your monthly budget</span>
+    <span class="perk-text"><strong>Budget Tracker</strong> - Stay within your monthly budget</span>
   </div>
 
-  <div class="gold-box">
+  <!-- <div class="gold-box">
     <p>"SPECS helped me save over <strong>UGX 45,000</strong> on my monthly groceries by showing me which store had the best prices for each item."</p>
-  </div>
+  </div> -->
 </div>
 
 <div class="right-panel">

@@ -397,7 +397,8 @@ $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
 
   <!-- BRAND -->
   <a href="<?= isAdmin() ? '/specs/admin/index.php' : (isLoggedIn() ? '/specs/user/index.php' : '/specs/index.php') ?>" class="nav-brand">
-    SP<em>EC</em>S
+    <!--SP<em>EC</em>S -->
+    SPECS
     <span class="nav-brand-badge">Mbarara</span>
   </a>
 
