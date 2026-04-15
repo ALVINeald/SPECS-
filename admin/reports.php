@@ -4,13 +4,16 @@
 //  File: register.php
 // ============================================================
 session_start();
-require_once 'config/db.php';
-require_once 'includes/functions.php';
-require_once 'includes/auth.php';
+require_once '../config/db.php';
+require_once '../includes/functions.php';
+require_once '../includes/auth.php';
 
 // Already logged in
-if (isLoggedIn()) {
-    redirect(isAdmin() ? 'admin/index.php' : 'user/index.php');
+if (!isLoggedIn()) {
+    redirect('/specs/login.php');
+}
+if (!isAdmin()) {
+    redirect('/specs/user/index.php');
 }
 
 $error   = '';
@@ -371,27 +374,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="perk">
     <span class="perk-icon">🆓</span>
-    <span class="perk-text"><strong>Completely Free</strong> — No subscription needed</span>
+    <span class="perk-text"><strong>Completely Free</strong>-No subscription needed</span>
   </div>
   <div class="perk">
     <span class="perk-icon">🏪</span>
-    <span class="perk-text"><strong>7 Supermarkets</strong> — All major Mbarara stores</span>
+    <span class="perk-text"><strong>7 Supermarkets</strong>-All major Mbarara stores</span>
   </div>
   <div class="perk">
     <span class="perk-icon">📦</span>
-    <span class="perk-text"><strong>205+ Products</strong> — Updated regularly</span>
+    <span class="perk-text"><strong>205+ Products</strong>-Updated regularly</span>
   </div>
   <div class="perk">
     <span class="perk-icon">🔔</span>
-    <span class="perk-text"><strong>Price Alerts</strong> — Know when prices drop</span>
+    <span class="perk-text"><strong>Price Alerts</strong>-Know when prices drop</span>
   </div>
   <div class="perk">
     <span class="perk-icon">🧾</span>
-    <span class="perk-text"><strong>Shopping Plans</strong> — Save and share your list</span>
+    <span class="perk-text"><strong>Shopping Plans</strong>-Save and share your list</span>
   </div>
   <div class="perk">
     <span class="perk-icon">💰</span>
-    <span class="perk-text"><strong>Budget Tracker</strong> — Stay within your monthly budget</span>
+    <span class="perk-text"><strong>Budget Tracker</strong>-Stay within your monthly budget</span>
   </div>
 
   <div class="gold-box">

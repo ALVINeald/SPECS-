@@ -13,8 +13,8 @@
       <span style="font-size:.78rem"> | Supermarket Pricing Estimation & Comparison System</span>
     </div>
     <div style="font-size:.75rem">
-      Built by <strong style="color:var(--gold)"><!-- Mbabazi Alvin --> GROUP 6</strong> · 
-      <!-- 24/BSU/DIT/3253 --> <!-- · --> Bishop Stuart University · Mbarara City, Uganda
+      Built by <strong style="color:var(--gold)">Mbabazi Alvin & Byamukama Brian<!--  GROUP 6--></strong> · 
+       24/BSU/DIT/3253 & 24/BSU/DIT/4835 · Bishop Stuart University · Mbarara City, Uganda
     </div>
   </div>
 </footer>
