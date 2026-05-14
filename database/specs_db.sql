@@ -1,8 +1,8 @@
 -- ============================================================
 --  SPECS – Supermarket Pricing Estimation & Comparison System
 --  DATABASE STRUCTURE FILE
---  Version: 1.0  |  Date: November 2025
---  Author: Mbabazi Alvin (24/BSU/DIT/3253)
+--  Version: 1.0  |  Date: 2026
+--  Author: Group 6
 --  Bishop Stuart University – Mbarara City, Uganda
 -- ============================================================
 -- HOW TO USE:
