@@ -1,526 +1,534 @@
 <?php
 // ============================================================
-//  SPECS – Consumer Dashboard/Home
-//  File: user/index.php
+//  SPECS – Public Homepage
+//  File: index.php
 // ============================================================
 session_start();
-require_once '../config/db.php';
-require_once '../includes/functions.php';
-require_once '../includes/auth.php';
-requireLogin();
- // HERE WE GO
-$pageTitle = 'My Dashboard';
-$user      = getCurrentUser();
-$uid       = (int)$user['id'];
- 
-$basketCount  = getBasketCount($conn);
-$alertsCount  = getAlertsCount($conn);
-$totalProds   = $conn->query("SELECT COUNT(*) AS t FROM products WHERE active=1")->fetch_assoc()['t'];
-$totalStores  = $conn->query("SELECT COUNT(*) AS t FROM stores WHERE active=1")->fetch_assoc()['t'];
- 
-$basketTotal = $conn->query("
-    SELECT SUM(
-        (SELECT MIN(pr.price) FROM prices pr WHERE pr.product_id = b.product_id) * b.quantity
-    ) AS total
-    FROM basket b WHERE b.user_id = $uid
-")->fetch_assoc()['total'] ?? 0;
- 
-$triggeredAlerts = $conn->query("
-    SELECT a.*, p.name AS product_name, p.unit,
-           s.name AS store_name,
-           (SELECT MIN(pr.price) FROM prices pr WHERE pr.product_id=a.product_id) AS current_price
-    FROM alerts a
-    JOIN products p ON a.product_id = p.id
-    LEFT JOIN stores s ON a.store_id = s.id
-    WHERE a.user_id = $uid AND a.is_triggered = 1 AND a.is_active = 1
-    ORDER BY a.triggered_at DESC
-    LIMIT 3
-")->fetch_all(MYSQLI_ASSOC);
- 
-$topDeals = $conn->query("
-    SELECT p.id, p.name, p.unit,
-           MIN(pr.price) AS best_price,
+require_once 'config/db.php';
+require_once 'includes/functions.php';
+
+// If logged in redirect to their dashboard
+if (isLoggedIn()) {
+    redirect(isAdmin() ? 'admin/index.php' : 'user/index.php');
+}
+// @ Alvin works | all the above is the same as the login and register page, we just check if the user is already logged in, if they are we redirect them to their respective dashboard, if not we show them the homepage with all the stats and info about the app
+// Get live stats from database
+$totalProducts = $conn->query("SELECT COUNT(*) AS t FROM products WHERE active=1")->fetch_assoc()['t'];
+$totalStores   = $conn->query("SELECT COUNT(*) AS t FROM stores WHERE active=1")->fetch_assoc()['t'];
+$totalUsers    = $conn->query("SELECT COUNT(*) AS t FROM users WHERE role='user'")->fetch_assoc()['t'];
+$totalPrices   = $conn->query("SELECT COUNT(*) AS t FROM prices")->fetch_assoc()['t'];
+
+// Get cheapest product deals (best savings)
+$deals = $conn->query("
+    SELECT p.id, p.name, p.unit, 
+           MIN(pr.price) AS best_price, 
            MAX(pr.price) AS worst_price,
            (MAX(pr.price) - MIN(pr.price)) AS savings,
-           (SELECT s.name FROM prices pr2 JOIN stores s ON pr2.store_id=s.id
-            WHERE pr2.product_id=p.id ORDER BY pr2.price ASC LIMIT 1) AS best_store
+           s.name AS best_store
     FROM prices pr
     JOIN products p ON pr.product_id = p.id
+    JOIN stores s ON pr.store_id = s.id
     WHERE p.active = 1
     GROUP BY p.id
-    HAVING (MAX(pr.price) - MIN(pr.price)) > 1500
+    HAVING (MAX(pr.price) - MIN(pr.price)) > 2000
     ORDER BY (MAX(pr.price) - MIN(pr.price)) DESC
     LIMIT 6
 ")->fetch_all(MYSQLI_ASSOC);
- 
-$recentBasket = $conn->query("
-    SELECT b.*, p.name AS product_name, p.unit,
-           (SELECT MIN(pr.price) FROM prices pr WHERE pr.product_id=b.product_id) AS best_price
-    FROM basket b
-    JOIN products p ON b.product_id = p.id
-    WHERE b.user_id = $uid
-    ORDER BY b.updated_at DESC
-    LIMIT 4
-")->fetch_all(MYSQLI_ASSOC);
- 
-$budget    = (int)($user['budget'] ?? 0);
-$budgetPct = $budget > 0 ? min(100, round(($basketTotal / $budget) * 100)) : 0;
-$budgetColor = $budgetPct > 90 ? 'var(--red)' : ($budgetPct > 70 ? 'var(--gold)' : 'var(--leaf)');
- 
-include '../includes/header.php';
+//@Alvin works | the above query gets the products with the biggest price differences across stores, we join the prices with products and stores to get the product name and the store name for the best price, we filter for active products and we only show products with a savings of more than 2000 UGX, we order by savings in descending order and limit to 6 deals
+// Get stores
+$stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")->fetch_all(MYSQLI_ASSOC);
 ?>
- 
-<style>
-/* ── DASHBOARD HERO ── */
-.dash-hero {
-  background: linear-gradient(135deg, var(--forest) 0%, #1e5c3a 60%, #2d7a50 100%);
-  padding: 32px 24px 80px;
-  position: relative;
-  overflow: hidden;
-}
-.dash-hero::before {
-  content: '';
-  position: absolute;
-  width: 400px; height: 400px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.04);
-  top: -120px; right: -80px;
-}
-.dash-hero::after {
-  content: '';
-  position: absolute;
-  width: 200px; height: 200px;
-  border-radius: 50%;
-  background: rgba(233,168,32,.08);
-  bottom: -60px; left: 10%;
-}
-.dash-hero-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-.dash-greeting {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 900;
-  font-size: 1.8rem;
-  color: #fff;
-  margin-bottom: 4px;
-}
-.dash-greeting span { color: var(--gold); }
-.dash-subtitle {
-  color: rgba(255,255,255,.6);
-  font-size: .88rem;
-  margin-bottom: 28px;
-}
- 
-/* ── HERO STAT CARDS ── */
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
-}
-.hero-stat {
-  background: rgba(255,255,255,.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: var(--r);
-  padding: 16px 18px;
-  text-decoration: none;
-  transition: all .2s;
-  display: block;
-}
-.hero-stat:hover {
-  background: rgba(255,255,255,.18);
-  transform: translateY(-2px);
-}
-.hero-stat-icon { font-size: 1.3rem; margin-bottom: 6px; }
-.hero-stat-num {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 900;
-  font-size: 1.5rem;
-  color: var(--gold);
-  display: block;
-}
-.hero-stat-lbl {
-  font-size: .72rem;
-  color: rgba(255,255,255,.6);
-  font-weight: 600;
-}
- 
-/* ── FLOATING CARDS ── */
-.dash-body {
-  max-width: 1240px;
-  margin: -48px auto 0;
-  padding: 0 24px 40px;
-  position: relative;
-  z-index: 2;
-}
- 
-/* ── ALERT BANNER ── */
-.alert-banner {
-  background: linear-gradient(135deg, #1a5c2e, #2d8a4e);
-  border-radius: var(--r);
-  padding: 18px 22px;
-  margin-bottom: 20px;
-  border: 1.5px solid rgba(82,183,136,.4);
-}
-.alert-banner-title {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 900;
-  color: var(--gold);
-  margin-bottom: 12px;
-  font-size: .95rem;
-}
-.alert-banner-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255,255,255,.1);
-  border-radius: var(--rs);
-  padding: 10px 14px;
-  margin-bottom: 8px;
-}
-.alert-banner-item:last-child { margin-bottom: 0; }
- 
-/* ── MAIN GRID ── */
-.dash-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 20px;
-  margin-bottom: 20px;
-}
- 
-/* ── DEALS CARD ── */
-.deals-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.deal-item {
-  border: 1.5px solid var(--sand);
-  border-radius: var(--rs);
-  padding: 14px;
-  cursor: pointer;
-  transition: all .2s;
-  background: var(--cream);
-}
-.deal-item:hover {
-  border-color: var(--mint);
-  background: var(--white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(24,56,42,.08);
-}
-.deal-name { font-weight: 800; font-size: .86rem; margin-bottom: 2px; color: var(--ink); }
-.deal-unit { font-size: .72rem; color: var(--muted); margin-bottom: 10px; }
-.deal-price-best {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 900;
-  font-size: 1.05rem;
-  color: var(--leaf);
-}
-.deal-price-old {
-  font-size: .75rem;
-  color: var(--muted);
-  text-decoration: line-through;
-  margin-top: 1px;
-}
-.deal-save-chip {
-  display: inline-block;
-  background: #d4edda;
-  color: #155724;
-  font-size: .65rem;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 99px;
-  margin-top: 6px;
-}
-.deal-store { font-size: .7rem; color: var(--muted); margin-top: 4px; }
- 
-/* ── RIGHT SIDEBAR ── */
-.sidebar { display: flex; flex-direction: column; gap: 16px; }
- 
-/* ── BUDGET CARD ── */
-.budget-card {
-  background: linear-gradient(135deg, var(--forest), #2a5e40);
-  border-radius: var(--r);
-  padding: 20px;
-  color: #fff;
-}
-.budget-title {
-  font-size: .72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: rgba(255,255,255,.5);
-  margin-bottom: 4px;
-}
-.budget-amount {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 900;
-  font-size: 1.6rem;
-  color: var(--gold);
-  margin-bottom: 2px;
-}
-.budget-of { font-size: .78rem; color: rgba(255,255,255,.5); margin-bottom: 12px; }
-.budget-bar-track {
-  height: 6px;
-  background: rgba(255,255,255,.15);
-  border-radius: 99px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-.budget-bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width .8s ease;
-}
-.budget-remaining { font-size: .75rem; color: rgba(255,255,255,.5); }
- 
-/* ── BASKET CARD ── */
-.basket-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--sand);
-  font-size: .83rem;
-}
-.basket-item-row:last-child { border-bottom: none; }
-.basket-total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 2px solid var(--sand);
-}
- 
-/* ── QUICK LINKS ── */
-.quick-links {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-}
-.quick-link {
-  background: var(--white);
-  border: 1.5px solid var(--sand);
-  border-radius: var(--r);
-  padding: 18px;
-  text-decoration: none;
-  transition: all .2s;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.quick-link:hover {
-  border-color: var(--mint);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(24,56,42,.08);
-}
-.ql-icon {
-  width: 42px; height: 42px;
-  border-radius: 10px;
-  background: var(--cream);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-.ql-title {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 800;
-  font-size: .88rem;
-  margin-bottom: 2px;
-}
-.ql-desc { font-size: .72rem; color: var(--muted); line-height: 1.4; }
- 
-@media(max-width:900px) {
-  .dash-grid { grid-template-columns: 1fr; }
-  .deals-grid { grid-template-columns: 1fr; }
-  .dash-hero { padding-bottom: 60px; }
-}
-@media(max-width:600px) {
-  .dash-greeting { font-size: 1.4rem; }
-  .hero-stats { grid-template-columns: repeat(2,1fr); }
-  .quick-links { grid-template-columns: repeat(2,1fr); }
-}
-</style>
- 
-<!-- HERO SECTION -->
-<div class="dash-hero">
-  <div class="dash-hero-inner">
-    <div class="dash-greeting">
-      👋 Hello, <span><?= htmlspecialchars(explode(' ', $user['name'])[0]) ?>!</span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPECS – Mbarara City Supermarket Price Comparison</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --forest:#18382a;--leaf:#2d6a4f;--mint:#52b788;--gold:#e9a820;
+      --amber:#f4a261;--cream:#fdf8f2;--sand:#e8e2d9;--ink:#1c1a17;
+      --muted:#7a7060;--white:#fff;--r:14px;--rs:8px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Nunito Sans',sans-serif;background:var(--cream);color:var(--ink)}
+    a{text-decoration:none;color:inherit}
+
+    /* ── NAV ── */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:500;
+      background:var(--forest);height:58px;
+      display:flex;align-items:center;padding:0 24px;
+      justify-content:space-between;
+      box-shadow:0 2px 12px rgba(0,0,0,.25);
+    }
+    .nav-brand{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:1.3rem;color:#fff;
+    }
+    .nav-brand em{color:var(--gold);font-style:normal}
+    .nav-right{display:flex;gap:10px;align-items:center}
+    .btn-nav{
+      padding:7px 18px;border-radius:var(--rs);
+      font-family:'Nunito',sans-serif;font-weight:800;
+      font-size:.84rem;cursor:pointer;border:none;transition:all .18s;
+    }
+    .btn-outline{background:rgba(255,255,255,.1);color:#fff}
+    .btn-outline:hover{background:rgba(255,255,255,.2)}
+    .btn-gold{background:var(--gold);color:var(--forest)}
+    .btn-gold:hover{background:#d4940f}
+
+
+    /* ── HERO ── */
+    .hero{
+      min-height:100vh;display:flex;align-items:center;
+      background:linear-gradient(135deg,var(--forest) 0%,var(--leaf) 60%,#3a8a62 100%);
+      padding:80px 24px 60px;position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:'';position:absolute;
+      width:600px;height:600px;border-radius:50%;
+      background:rgba(255,255,255,.04);
+      top:-200px;right:-150px;
+    }
+    .hero::after{
+      content:'';position:absolute;
+      width:400px;height:400px;border-radius:50%;
+      background:rgba(233,168,32,.08);
+      bottom:-100px;left:-100px;
+    }
+    .hero-inner{
+      max-width:1200px;margin:0 auto;width:100%;
+      display:flex;align-items:center;gap:60px;
+      position:relative;z-index:1;
+    }
+    .hero-text{flex:1}
+    .hero-badge{
+      display:inline-flex;align-items:center;gap:7px;
+      background:rgba(233,168,32,.18);border:1px solid rgba(233,168,32,.35);
+      color:var(--gold);padding:5px 14px;border-radius:99px;
+      font-size:.74rem;font-weight:800;letter-spacing:.06em;
+      text-transform:uppercase;margin-bottom:20px;
+    }
+    .hero h1{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:3.2rem;color:#fff;line-height:1.1;
+      margin-bottom:18px;
+    }
+    .hero h1 em{color:var(--gold);font-style:normal}
+    .hero p{
+      color:rgba(255,255,255,.7);font-size:1.05rem;
+      line-height:1.7;margin-bottom:32px;max-width:480px;
+    }
+    .hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+    .btn-hero-primary{
+      background:var(--gold);color:var(--forest);
+      padding:14px 28px;border-radius:var(--rs);
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:1rem;border:none;cursor:pointer;
+      transition:all .2s;display:inline-block;
+    }
+    .btn-hero-primary:hover{background:#d4940f;transform:translateY(-2px)}
+    .btn-hero-secondary{
+      background:rgba(255,255,255,.12);color:#fff;
+      padding:14px 28px;border-radius:var(--rs);
+      font-family:'Nunito',sans-serif;font-weight:800;
+      font-size:1rem;border:1.5px solid rgba(255,255,255,.25);
+      cursor:pointer;transition:all .2s;display:inline-block;
+    }
+    .btn-hero-secondary:hover{background:rgba(255,255,255,.2)}
+
+    /* Hero stats */
+    .hero-stats{
+      display:flex;gap:24px;margin-top:36px;flex-wrap:wrap;
+    }
+    .hs{text-align:center}
+    .hs-num{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:1.8rem;color:var(--gold);display:block;
+    }
+    .hs-lbl{color:rgba(255,255,255,.55);font-size:.74rem;font-weight:600}
+
+    /* Hero visual */
+    .hero-visual{
+      flex:1;display:grid;grid-template-columns:1fr 1fr;
+      gap:12px;max-width:380px;
+    }
+    .hv-card{
+      background:rgba(255,255,255,.1);backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,.15);border-radius:12px;
+      padding:16px;
+    }
+    .hv-card.tall{grid-row:span 2}
+    .hv-product{font-size:.78rem;font-weight:700;color:#fff;margin-bottom:8px}
+    .hv-prices{display:flex;flex-direction:column;gap:5px}
+    .hv-price-row{
+      display:flex;justify-content:space-between;
+      font-size:.73rem;color:rgba(255,255,255,.7);
+    }
+    .hv-price-best{color:var(--gold);font-weight:800}
+    .savings-badge{
+      background:rgba(233,168,32,.2);color:var(--gold);
+      border-radius:6px;padding:3px 7px;font-size:.68rem;
+      font-weight:800;margin-top:6px;display:inline-block;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar{
+      background:var(--white);border-bottom:1.5px solid var(--sand);
+      padding:20px 24px;
+    }
+    .stats-inner{
+      max-width:1200px;margin:0 auto;
+      display:flex;justify-content:space-around;align-items:center;
+      flex-wrap:wrap;gap:16px;
+    }
+    .stat-item{text-align:center}
+    .stat-num{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:1.6rem;color:var(--forest);display:block;
+    }
+    .stat-lbl{font-size:.74rem;color:var(--muted);font-weight:600}
+
+    /* ── SECTIONS ── */
+    section{padding:64px 24px}
+    .sec-inner{max-width:1200px;margin:0 auto}
+    .sec-tag{
+      font-size:.7rem;font-weight:800;color:var(--leaf);
+      text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;
+    }
+    .sec-title{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:2rem;color:var(--ink);margin-bottom:12px;
+    }
+    .sec-sub{color:var(--muted);font-size:.92rem;max-width:520px;line-height:1.7}
+
+    /* ── HOW IT WORKS ── */
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:40px}
+    .step{background:var(--white);border-radius:var(--r);padding:28px;border:1.5px solid var(--sand)}
+    .step-num{
+      width:42px;height:42px;border-radius:10px;
+      background:var(--forest);color:var(--gold);
+      font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;
+      display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+    }
+    .step h3{font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;margin-bottom:7px}
+    .step p{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+    /* ── TOP DEALS ── */
+    .deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:32px}
+    .deal-card{
+      background:var(--white);border-radius:var(--r);
+      border:1.5px solid var(--sand);padding:18px;
+      transition:all .2s;
+    }
+    .deal-card:hover{border-color:var(--mint);transform:translateY(-2px);box-shadow:0 8px 24px rgba(24,56,42,.1)}
+    .deal-name{font-weight:700;font-size:.9rem;margin-bottom:4px}
+    .deal-unit{font-size:.74rem;color:var(--muted);margin-bottom:12px}
+    .deal-prices{display:flex;justify-content:space-between;align-items:flex-end}
+    .deal-best{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;color:var(--leaf)}
+    .deal-worst{font-size:.78rem;color:var(--muted);text-decoration:line-through}
+    .deal-save{
+      background:#d4edda;color:#155724;
+      font-size:.7rem;font-weight:800;
+      padding:3px 8px;border-radius:99px;margin-top:6px;display:inline-block;
+    }
+    .deal-store{font-size:.74rem;color:var(--muted);margin-top:6px}
+
+    /* ── STORES ── */
+    .stores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:32px}
+    .store-card{
+      background:var(--white);border-radius:var(--r);
+      border:1.5px solid var(--sand);padding:20px;
+      text-align:center;transition:all .2s;
+    }
+    .store-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+    .store-icon{font-size:2rem;margin-bottom:10px}
+    .store-name{font-family:'Nunito',sans-serif;font-weight:800;font-size:.92rem;margin-bottom:4px}
+    .store-addr{font-size:.74rem;color:var(--muted);margin-bottom:8px}
+    .store-tier{
+      font-size:.66rem;font-weight:800;padding:2px 9px;
+      border-radius:99px;text-transform:uppercase;letter-spacing:.05em;
+    }
+    .tier-premium{background:#fff3cd;color:#856404}
+    .tier-mid{background:#cce5ff;color:#004085}
+    .tier-budget{background:#d4edda;color:#155724}
+    .tier-market{background:#f8d7da;color:#721c24}
+
+    /* ── FEATURES ── */
+    .features-bg{background:var(--forest)}
+    .features-bg .sec-title{color:#fff}
+    .features-bg .sec-sub{color:rgba(255,255,255,.6)}
+    .features-bg .sec-tag{color:var(--gold)}
+    .feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-top:36px}
+    .feat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:24px}
+    .feat-icon{font-size:1.8rem;margin-bottom:12px}
+    .feat h3{font-family:'Nunito',sans-serif;font-weight:800;color:#fff;margin-bottom:7px;font-size:.95rem}
+    .feat p{font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.6}
+
+    /* ── CTA ── */
+    .cta-section{
+      background:linear-gradient(135deg,var(--gold),var(--amber));
+      padding:64px 24px;text-align:center;
+    }
+    .cta-section h2{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:2.2rem;color:var(--forest);margin-bottom:12px;
+    }
+    .cta-section p{color:rgba(24,56,42,.7);margin-bottom:28px;font-size:.95rem}
+    .btn-cta{
+      background:var(--forest);color:#fff;
+      padding:14px 32px;border-radius:var(--rs);
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:1rem;border:none;cursor:pointer;
+      transition:all .2s;display:inline-block;margin:6px;
+    }
+    .btn-cta:hover{background:var(--leaf);transform:translateY(-2px)}
+    .btn-cta-outline{
+      background:transparent;color:var(--forest);
+      border:2px solid var(--forest);
+      padding:14px 32px;border-radius:var(--rs);
+      font-family:'Nunito',sans-serif;font-weight:900;
+      font-size:1rem;cursor:pointer;
+      transition:all .2s;display:inline-block;margin:6px;
+    }
+
+    /* ── FOOTER ── */
+    footer{
+      background:var(--forest);color:rgba(255,255,255,.45);
+      padding:28px 24px;
+    }
+    .footer-inner{
+      max-width:1200px;margin:0 auto;
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    }
+    .footer-brand{
+      font-family:'Nunito',sans-serif;font-weight:900;
+      color:var(--gold);font-size:1.1rem;
+    }
+
+    @media(max-width:768px){
+      .hero h1{font-size:2rem}
+      .hero-visual{display:none}
+      .hero-inner{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  // @Alvin works | the above styles are for the entire homepage, we use a combination of CSS Grid and Flexbox to create a responsive layout, we have a fixed navigation bar at the top, a hero section with a background gradient and some decorative circles, a stats bar that shows live numbers from the database, sections for how it works, top deals, stores and features, and a call to action at the bottom before the footer
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="nav-brand">SP<em>EC</em>S <small style="font-size:.55rem;background:rgba(255,255,255,.12);padding:2px 7px;border-radius:99px;color:rgba(255,255,255,.6);font-weight:700">Mbarara</small></div>
+  <div class="nav-right">
+    <a href="login.php"    class="btn-nav btn-outline">Sign In</a>
+    <a href="register.php" class="btn-nav btn-gold">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">🇺🇬 Mbarara City · Uganda</div>
+      <h1>Stop <em>Overpaying</em><br>at Mbarara Supermarkets</h1>
+      <p>Compare prices across <?= $totalStores ?> supermarkets, track price trends, set alerts and build a smart shopping plan - all in one free app.</p>
+      <div class="hero-btns">
+        <a href="register.php" class="btn-hero-primary">Start Saving Free →</a>
+        <a href="login.php"    class="btn-hero-secondary">Sign In</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hs"><span class="hs-num"><?= number_format($totalProducts) ?>+</span><span class="hs-lbl">Products</span></div>
+        <div class="hs"><span class="hs-num"><?= $totalStores ?></span><span class="hs-lbl">Supermarkets</span></div>
+        <div class="hs"><span class="hs-num"><?= number_format($totalPrices) ?>+</span><span class="hs-lbl">Price Records</span></div>
+        <div class="hs"><span class="hs-num"><?= number_format($totalUsers) ?>+</span><span class="hs-lbl">Shoppers</span></div>
+      </div>
     </div>
-    <div class="dash-subtitle">
-      Welcome to SPECS - <?= number_format($totalProds) ?> products tracked across <?= $totalStores ?> Mbarara stores
+    <div class="hero-visual">
+      <div class="hv-card tall">
+        <div class="hv-product">🛢️ Mukwano Oil 1L</div>
+        <div class="hv-prices">
+          <?php
+          $oilPrices = $conn->query("SELECT pr.price, s.short_name FROM prices pr JOIN stores s ON pr.store_id=s.id WHERE pr.product_id=39 ORDER BY pr.price ASC LIMIT 5");
+          $first = true;
+          while($op = $oilPrices->fetch_assoc()):
+          ?>
+          <div class="hv-price-row">
+            <span><?= $op['short_name'] ?></span>
+            <span class="<?= $first ? 'hv-price-best' : '' ?>">UGX <?= number_format($op['price']) ?></span>
+          </div>
+          <?php $first = false; endwhile; ?>
+        </div>
+        <span class="savings-badge">Save up to UGX 3,000</span>
+      </div>
+      <div class="hv-card">
+        <div class="hv-product">🍞 White Bread</div>
+        <div class="hv-prices">
+          <?php
+          $breadPrices = $conn->query("SELECT pr.price, s.short_name FROM prices pr JOIN stores s ON pr.store_id=s.id WHERE pr.product_id=69 ORDER BY pr.price ASC LIMIT 3");
+          $first = true;
+          while($bp = $breadPrices->fetch_assoc()):
+          ?>
+          <div class="hv-price-row">
+            <span><?= $bp['short_name'] ?></span>
+            <span class="<?= $first ? 'hv-price-best' : '' ?>">UGX <?= number_format($bp['price']) ?></span>
+          </div>
+          <?php $first = false; endwhile; ?>
+        </div>
+      </div>
+      <div class="hv-card">
+        <div class="hv-product">🥛 Fresh Milk 1L</div>
+        <div class="hv-prices">
+          <?php
+          $milkPrices = $conn->query("SELECT pr.price, s.short_name FROM prices pr JOIN stores s ON pr.store_id=s.id WHERE pr.product_id=24 ORDER BY pr.price ASC LIMIT 3");
+          $first = true;
+          while($mp = $milkPrices->fetch_assoc()):
+          ?>
+          <div class="hv-price-row">
+            <span><?= $mp['short_name'] ?></span>
+            <span class="<?= $first ? 'hv-price-best' : '' ?>">UGX <?= number_format($mp['price']) ?></span>
+          </div>
+          <?php $first = false; endwhile; ?>
+        </div>
+      </div>
     </div>
- 
-    <!-- HERO STATS -->
-    <div class="hero-stats">
-      <a href="basket.php" class="hero-stat">
-        <div class="hero-stat-icon">🛒</div>
-        <span class="hero-stat-num"><?= $basketCount ?></span>
-        <span class="hero-stat-lbl">Basket Items</span>
-      </a>
-      <a href="alerts.php" class="hero-stat">
-        <div class="hero-stat-icon">🔔</div>
-        <span class="hero-stat-num"><?= $alertsCount ?></span>
-        <span class="hero-stat-lbl">Active Alerts</span>
-      </a>
-      <a href="browse.php" class="hero-stat">
-        <div class="hero-stat-icon">📦</div>
-        <span class="hero-stat-num"><?= number_format($totalProds) ?></span>
-        <span class="hero-stat-lbl">Products</span>
-      </a>
-      <a href="browse.php" class="hero-stat">
-        <div class="hero-stat-icon">🏬</div>
-        <span class="hero-stat-num"><?= $totalStores ?></span>
-        <span class="hero-stat-lbl">Stores</span>
-      </a>
-    </div>
+  </div>
+</section>
+<!-- @Alvin works | the above hero section has a left side with the main headline, subtext and call to action buttons, and a right side with a visual card showing live price comparisons for popular products like cooking oil, bread and milk, we use PHP to query the database for the latest prices for these products and display them in the hero section to immediately show the value of the app to new visitors -->
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><span class="stat-num"><?= number_format($totalProducts) ?>+</span><span class="stat-lbl">Products Tracked</span></div>
+    <div class="stat-item"><span class="stat-num"><?= $totalStores ?></span><span class="stat-lbl">Mbarara Supermarkets</span></div>
+    <div class="stat-item"><span class="stat-num"><?= number_format($totalPrices) ?>+</span><span class="stat-lbl">Live Price Records</span></div>
+    <div class="stat-item"><span class="stat-num">UGX</span><span class="stat-lbl">All Prices in Shillings</span></div>
   </div>
 </div>
- 
-<!-- DASHBOARD BODY -->
-<div class="dash-body">
-  <?php showFlash(); ?>
- 
-  <!-- TRIGGERED ALERTS BANNER -->
-  <?php if (!empty($triggeredAlerts)): ?>
-  <div class="alert-banner">
-    <div class="alert-banner-title">🎉 Your price alerts have been triggered!</div>
-    <?php foreach ($triggeredAlerts as $ta): ?>
-    <div class="alert-banner-item">
-      <div>
-        <div style="font-weight:800;color:#fff;font-size:.88rem"><?= htmlspecialchars($ta['product_name']) ?> <span style="color:rgba(255,255,255,.5);font-size:.76rem">(<?= $ta['unit'] ?>)</span></div>
-        <div style="font-size:.74rem;color:rgba(255,255,255,.5)"><?= $ta['store_name'] ?? 'Any store' ?></div>
+<!-- @Alvin works | the stats bar is a simple horizontal section that shows some key numbers about the app, we pull these numbers from the database to show live stats about how many products, stores and price records we have, this helps build trust and credibility with new visitors by showing that we have a large and growing database of prices for Mbarara supermarkets -->
+<!-- HOW IT WORKS -->
+<section>
+  <div class="sec-inner">
+    <div class="sec-tag">How it works</div>
+    <div class="sec-title">Save money in 3 simple steps</div>
+    <div class="sec-sub">SPECS makes it easy to find the best prices across Mbarara supermarkets without visiting each one.</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Create your free account</h3>
+        <p>Sign up in seconds using your email or Google account. Set your monthly budget to get started.</p>
       </div>
-      <div style="text-align:right">
-        <div style="font-family:'Nunito',sans-serif;font-weight:900;color:var(--gold)"><?= formatPrice($ta['current_price']) ?></div>
-        <div style="font-size:.72rem;color:rgba(255,255,255,.45)">Target: <?= formatPrice($ta['target_price']) ?></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Browse & compare prices</h3>
+        <p>Search for any product and instantly see prices across all 7 Mbarara supermarkets side by side.</p>
       </div>
-    </div>
-    <?php endforeach; ?>
-  </div>
-  <?php endif; ?>
- 
-  <!-- MAIN GRID -->
-  <div class="dash-grid">
- 
-    <!-- LEFT: TOP DEALS -->
-    <div class="card">
-      <div class="card-title">
-        🔥 Best Deals Right Now
-        <a href="browse.php?sort=savings" style="float:right;font-size:.72rem;color:var(--leaf);font-weight:700">See all →</a>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Build your shopping plan</h3>
+        <p>Add items to your basket, pick the best store for each item, and download a shareable shopping receipt.</p>
       </div>
-      <?php if (empty($topDeals)): ?>
-        <div class="empty-state"><div class="ei">🛍️</div><p>No deals found.</p></div>
-      <?php else: ?>
-      <div class="deals-grid">
-        <?php foreach ($topDeals as $d): ?>
-        <div class="deal-item" onclick="window.location='browse.php?q=<?= urlencode($d['name']) ?>'">
-          <div class="deal-name"><?= htmlspecialchars($d['name']) ?></div>
-          <div class="deal-unit"><?= htmlspecialchars($d['unit']) ?></div>
-          <div class="deal-price-best"><?= formatPrice($d['best_price']) ?></div>
-          <div class="deal-price-old"><?= formatPrice($d['worst_price']) ?></div>
-          <span class="deal-save-chip">Save <?= formatPrice($d['savings']) ?></span>
-          <div class="deal-store">📍 <?= htmlspecialchars($d['best_store']) ?></div>
-        </div>
-        <?php endforeach; ?>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Set price alerts</h3>
+        <p>Tell us your target price for any product and we will notify you when it drops below your limit.</p>
       </div>
-      <?php endif; ?>
-      <div style="margin-top:16px">
-        <a href="browse.php" class="btn btn-green btn-sm">🛍️ Browse All <?= number_format($totalProds) ?> Products →</a>
-      </div>
-    </div>
- 
-    <!-- RIGHT SIDEBAR -->
-    <div class="sidebar">
- 
-      <!-- BUDGET CARD -->
-      <?php if ($budget > 0): ?>
-      <div class="budget-card">
-        <div class="budget-title">💰 Monthly Budget</div>
-        <div class="budget-amount"><?= formatPrice($basketTotal) ?></div>
-        <div class="budget-of">of <?= formatPrice($budget) ?> budget</div>
-        <div class="budget-bar-track">
-          <div class="budget-bar-fill" style="width:<?= $budgetPct ?>%;background:<?= $budgetColor ?>"></div>
-        </div>
-        <div class="budget-remaining"><?= $budgetPct ?>% used · <?= formatPrice(max(0, $budget - $basketTotal)) ?> remaining</div>
-      </div>
-      <?php else: ?>
-      <div class="card" style="border-left:4px solid var(--gold)">
-        <div class="card-title">💰 Budget Tracker</div>
-        <div style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Set a monthly budget to track your grocery spending.</div>
-        <a href="account.php" class="btn btn-primary btn-sm">Set My Budget</a>
-      </div>
-      <?php endif; ?>
- 
-      <!-- BASKET CARD -->
-      <div class="card">
-        <div class="card-title">
-          🛒 My Basket
-          <?php if (!empty($recentBasket)): ?>
-          <a href="basket.php" style="float:right;font-size:.72rem;color:var(--leaf);font-weight:700">View all →</a>
-          <?php endif; ?>
-        </div>
-        <?php if (empty($recentBasket)): ?>
-          <div style="font-size:.83rem;color:var(--muted);margin-bottom:12px;text-align:center;padding:16px 0">
-            <div style="font-size:1.8rem;margin-bottom:8px">🛒</div>
-            Your basket is empty
-          </div>
-          <a href="browse.php" class="btn btn-green btn-sm" style="width:100%;justify-content:center">Start Shopping</a>
-        <?php else: ?>
-          <?php foreach ($recentBasket as $bi): ?>
-          <div class="basket-item-row">
-            <div>
-              <div style="font-weight:700"><?= htmlspecialchars($bi['product_name']) ?></div>
-              <div style="font-size:.72rem;color:var(--muted)"><?= htmlspecialchars($bi['unit']) ?> × <?= $bi['quantity'] ?></div>
-            </div>
-            <div style="font-weight:800;color:var(--leaf)"><?= formatPrice($bi['best_price'] * $bi['quantity']) ?></div>
-          </div>
-          <?php endforeach; ?>
-          <div class="basket-total-row">
-            <div>
-              <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase">Best Total</div>
-              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;color:var(--forest)"><?= formatPrice($basketTotal) ?></div>
-            </div>
-            <a href="basket.php" class="btn btn-primary btn-sm">View Basket</a>
-          </div>
-        <?php endif; ?>
-      </div>
- 
     </div>
   </div>
- 
-  <!-- QUICK LINKS -->
-  <div style="margin-bottom:8px">
-    <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;color:var(--ink);margin-bottom:14px">Quick Links</div>
-    <div class="quick-links">
-      <?php
-      $links = [
-        ['🛍️', 'Browse Products',  'browse.php',  'Search & compare prices'],
-        ['🛒', 'My Basket',        'basket.php',  'View items & save plan'],
-        ['🔔', 'Price Alerts',     'alerts.php',  'Set & manage alerts'],
-        ['📈', 'Price Trends',     'trends.php',  'Track price history'],
-        ['👤', 'My Account',       'account.php', 'Profile & settings'],
-      ];
-      foreach ($links as $l): ?>
-      <a href="<?= $l[2] ?>" class="quick-link">
-        <div class="ql-icon"><?= $l[0] ?></div>
-        <div>
-          <div class="ql-title"><?= $l[1] ?></div>
-          <div class="ql-desc"><?= $l[3] ?></div>
+</section>
+<!-- @Alvin works | the how it works section breaks down the main features of the app into simple steps with icons and descriptions, this helps new visitors quickly understand the value proposition and how they can use the app to save money on their grocery shopping in Mbarara -->
+<!-- TOP DEALS -->
+<?php if (!empty($deals)): ?>
+<section style="background:var(--white);border-top:1.5px solid var(--sand);border-bottom:1.5px solid var(--sand)">
+  <div class="sec-inner">
+    <div class="sec-tag">Price comparison</div>
+    <div class="sec-title">Biggest savings right now 🔥</div>
+    <div class="sec-sub">Products with the biggest price differences across Mbarara stores.</div>
+    <div class="deals-grid">
+      <?php foreach($deals as $deal): 
+        $saving = $deal['worst_price'] - $deal['best_price'];
+      ?>
+      <div class="deal-card">
+        <div class="deal-name"><?= htmlspecialchars($deal['name']) ?></div>
+        <div class="deal-unit"><?= htmlspecialchars($deal['unit']) ?></div>
+        <div class="deal-prices">
+          <div>
+            <div class="deal-best">UGX <?= number_format($deal['best_price']) ?></div>
+            <div class="deal-worst">UGX <?= number_format($deal['worst_price']) ?></div>
+          </div>
         </div>
+        <span class="deal-save">Save UGX <?= number_format($saving) ?></span>
+        <div class="deal-store">Best at: <?= htmlspecialchars($deal['best_store']) ?></div>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <div style="text-align:center;margin-top:28px">
+      <a href="register.php" class="btn-hero-primary" style="background:var(--forest);color:#fff;padding:12px 28px;border-radius:var(--rs);font-family:'Nunito',sans-serif;font-weight:900;display:inline-block">
+        See All <?= $totalProducts ?> Products →
       </a>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+<!-- @Alvin works | the top deals section highlights some of the products with the biggest price differences across stores, we use a PHP loop to display these deals in a grid format, showing the product name, unit, best and worst prices, potential savings and which store has the best price, this serves as a powerful demonstration of the value of the app by showing real examples of how much money shoppers can save by using SPECS to compare prices before they buy -->
+<!-- STORES -->
+<section>
+  <div class="sec-inner">
+    <div class="sec-tag">Our coverage</div>
+    <div class="sec-title">All major Mbarara supermarkets</div>
+    <div class="sec-sub">We track prices across every major supermarket in Mbarara City.</div>
+    <div class="stores-grid">
+      <?php 
+      $storeIcons = ['premium'=>'🏆','mid'=>'🛒','budget'=>'💰','market'=>'🏪'];
+      foreach($stores as $store): ?>
+      <div class="store-card">
+        <div class="store-icon"><?= $storeIcons[$store['tier']] ?? '🏬' ?></div>
+        <div class="store-name"><?= htmlspecialchars($store['name']) ?></div>
+        <div class="store-addr"><?= htmlspecialchars($store['address']) ?></div>
+        <span class="store-tier tier-<?= $store['tier'] ?>"><?= ucfirst($store['tier']) ?></span>
+      </div>
       <?php endforeach; ?>
     </div>
   </div>
- 
+</section>
+<!-- @Alvin works | the stores section shows all the supermarkets in Mbarara that we track prices for, we use a PHP loop to display each store in a card format with an icon representing their tier (premium, mid-range, budget, market), their name, address and tier badge, this helps build trust with users by showing that we have comprehensive coverage of all the major stores in the city and that they can rely on our price comparisons to be accurate and up to date across all these locations -->
+<!-- FEATURES -->
+<section class="features-bg">
+  <div class="sec-inner">
+    <div class="sec-tag">Features</div>
+    <div class="sec-title">Everything you need to shop smart</div>
+    <div class="sec-sub">Built specifically for Mbarara City shoppers who want to stretch their shillings further.</div>
+    <div class="feat-grid">
+      <div class="feat"><div class="feat-icon">🔍</div><h3>Price Comparison</h3><p>See prices for 205+ products across 7 stores instantly, sorted by cheapest.</p></div>
+      <div class="feat"><div class="feat-icon">🔔</div><h3>Price Alerts</h3><p>Set a target price and get notified by email when a product drops below it.</p></div>
+      <div class="feat"><div class="feat-icon">📈</div><h3>Price Trends</h3><p>See how prices have changed over the past 6 months with interactive charts.</p></div>
+      <div class="feat"><div class="feat-icon">🧾</div><h3>Shopping Receipts</h3><p>Download a shareable shopping plan that looks like an MTN MoMo receipt.</p></div>
+      <div class="feat"><div class="feat-icon">💰</div><h3>Budget Tracker</h3><p>Set your monthly grocery budget and track how much you are spending.</p></div>
+      <div class="feat"><div class="feat-icon">🛒</div><h3>Smart Basket</h3><p>Add items to your basket and SPECS tells you which store gives the best total.</p></div>
+    </div>
+  </div>
+</section>
+<!-- @Alvin works | the features section highlights the key features of the app in a visually appealing way, we use icons and short descriptions to quickly communicate the value of each feature, this helps new visitors understand all the different ways they can use SPECS to save money and shop smarter in Mbarara -->
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Ready to start saving? 🚀</h2>
+  <p>Join Mbarara shoppers already using SPECS to spend less on groceries every month.</p>
+  <a href="register.php" class="btn-cta">Create Free Account</a>
+  <a href="login.php"    class="btn-cta-outline">Sign In</a>
 </div>
- 
-<?php include '../includes/footer.php'; ?>
- 
+<!--@Alvin works | the call to action section is the final section of the homepage that encourages visitors to take action and sign up for the app, we use a strong headline, a supportive subtext and clear buttons to guide users towards creating an account or signing in if they already have one, this is important to convert visitors into users and start building our user base in Mbarara -->
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <span class="footer-brand">SPECS</span>
+      <span style="font-size:.8rem"> | Supermarket Pricing Estimation & Comparison System</span>
+    </div>
+    <div style="font-size:.76rem">
+      Built by <strong style="color:var(--gold)"><!--Mbabazi Alvin & --> GROUP 6</strong> · <!--24/BSU/DIT/3253 --> · Bishop Stuart University · Mbarara
+    </div>
+  </div>
+</footer>
+<!-- @Alvin works | the footer provides some basic information about the app and credits the creator, it also reinforces the branding with the app name and a tagline, this helps create a sense of legitimacy and professionalism for new visitors who scroll down to the bottom of the page -->
+</body>
+</html>
