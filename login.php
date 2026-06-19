@@ -228,6 +228,8 @@ function googleLogin() {
 (function () {
   const canvas = document.getElementById('doodle-bg');
   const ctx = canvas.getContext('2d');
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
 
   function resize() {
     canvas.width = window.innerWidth;
@@ -235,83 +237,106 @@ function googleLogin() {
     draw();
   }
 
-  function basket(cx, cy, s) {
-    ctx.beginPath();
-    ctx.moveTo(cx - 0.6 * s, cy - 0.3 * s);
-    ctx.lineTo(cx + 0.6 * s, cy - 0.3 * s);
-    ctx.lineTo(cx + 0.45 * s, cy + 0.5 * s);
-    ctx.lineTo(cx - 0.45 * s, cy + 0.5 * s);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 0.35 * s, cy - 0.3 * s);
-    ctx.quadraticCurveTo(cx, cy - 0.9 * s, cx + 0.35 * s, cy - 0.3 * s);
-    ctx.stroke();
+  function cart(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath(); ctx.rect(-0.5 * s, -0.4 * s, 1 * s, 0.6 * s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.5 * s, -0.4 * s); ctx.lineTo(-0.65 * s, -0.65 * s); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-0.25 * s, 0.35 * s, 0.1 * s, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0.25 * s, 0.35 * s, 0.1 * s, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
   }
 
-  function leaf(cx, cy, s) {
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 0.5 * s, 0.3 * s, Math.PI / 4, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 0.3 * s, cy + 0.2 * s);
-    ctx.lineTo(cx + 0.3 * s, cy - 0.2 * s);
-    ctx.stroke();
+  function apple(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath(); ctx.arc(0, 0, 0.4 * s, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -0.4 * s); ctx.quadraticCurveTo(0.15 * s, -0.6 * s, 0.1 * s, -0.7 * s); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0.22 * s, -0.55 * s, 0.12 * s, 0.06 * s, -0.6, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
   }
 
-  function receipt(cx, cy, s) {
+  function tagSmile(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
     ctx.beginPath();
-    ctx.rect(cx - 0.35 * s, cy - 0.6 * s, 0.7 * s, 1.2 * s);
+    ctx.moveTo(-0.5 * s, -0.3 * s); ctx.lineTo(0.1 * s, -0.3 * s); ctx.lineTo(0.5 * s, 0);
+    ctx.lineTo(0.1 * s, 0.3 * s); ctx.lineTo(-0.5 * s, 0.3 * s); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-0.25 * s, 0, 0.07 * s, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, -0.05 * s, 0.18 * s, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    ctx.restore();
+  }
+
+  function bagHeart(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath();
+    ctx.moveTo(-0.4 * s, -0.4 * s); ctx.lineTo(0.4 * s, -0.4 * s); ctx.lineTo(0.3 * s, 0.5 * s);
+    ctx.lineTo(-0.3 * s, 0.5 * s); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, -0.4 * s, 0.15 * s, Math.PI, 0); ctx.stroke();
+    ctx.beginPath();
+    const hs = 0.12 * s;
+    ctx.moveTo(0, 0.15 * s);
+    ctx.bezierCurveTo(-hs, -0.05 * s, -hs * 2, 0.15 * s, 0, 0.32 * s);
+    ctx.bezierCurveTo(hs * 2, 0.15 * s, hs, -0.05 * s, 0, 0.15 * s);
     ctx.stroke();
+    ctx.restore();
+  }
+
+  function basket(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath();
+    ctx.moveTo(-0.6 * s, -0.3 * s); ctx.lineTo(0.6 * s, -0.3 * s); ctx.lineTo(0.45 * s, 0.5 * s);
+    ctx.lineTo(-0.45 * s, 0.5 * s); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.35 * s, -0.3 * s); ctx.quadraticCurveTo(0, -0.9 * s, 0.35 * s, -0.3 * s); ctx.stroke();
+    ctx.restore();
+  }
+
+  function coin(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath(); ctx.arc(0, 0, 0.4 * s, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -0.18 * s); ctx.lineTo(0, 0.18 * s); ctx.stroke();
+    ctx.restore();
+  }
+
+  function leaf(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath(); ctx.ellipse(0, 0, 0.5 * s, 0.3 * s, Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.3 * s, 0.2 * s); ctx.lineTo(0.3 * s, -0.2 * s); ctx.stroke();
+    ctx.restore();
+  }
+
+  function receipt(cx, cy, s, c, rot) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = c;
+    ctx.beginPath(); ctx.rect(-0.32 * s, -0.55 * s, 0.64 * s, 1.1 * s); ctx.stroke();
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      ctx.moveTo(cx - 0.2 * s, cy - 0.3 * s + i * 0.3 * s);
-      ctx.lineTo(cx + 0.2 * s, cy - 0.3 * s + i * 0.3 * s);
+      ctx.moveTo(-0.18 * s, -0.28 * s + i * 0.28 * s);
+      ctx.lineTo(0.18 * s, -0.28 * s + i * 0.28 * s);
       ctx.stroke();
     }
+    ctx.restore();
   }
 
-  function coin(cx, cy, s) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, 0.4 * s, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 0.2 * s);
-    ctx.lineTo(cx, cy + 0.2 * s);
-    ctx.stroke();
-  }
+  const gold = 'rgba(233,168,32,0.16)';
+  const mint = 'rgba(82,183,136,0.16)';
+  const white = 'rgba(255,255,255,0.12)';
+  const shapes = [cart, apple, tagSmile, bagHeart, basket, coin, leaf, receipt];
+  const colors = [gold, mint, white];
 
-  function bag(cx, cy, s) {
-    ctx.beginPath();
-    ctx.moveTo(cx - 0.4 * s, cy - 0.4 * s);
-    ctx.lineTo(cx + 0.4 * s, cy - 0.4 * s);
-    ctx.lineTo(cx + 0.3 * s, cy + 0.5 * s);
-    ctx.lineTo(cx - 0.3 * s, cy + 0.5 * s);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(cx, cy - 0.4 * s, 0.15 * s, Math.PI, 0);
-    ctx.stroke();
+  const items = [];
+  for (let i = 0; i < 26; i++) {
+    items.push({
+      x: Math.random(),
+      y: Math.random(),
+      s: 14 + Math.random() * 16,
+      rot: (Math.random() - 0.5) * 0.6,
+      fn: shapes[Math.floor(Math.random() * shapes.length)],
+      c: colors[Math.floor(Math.random() * colors.length)]
+    });
   }
-
-  // Fixed positions (fractions of viewport), drawn once - no animation
-  const items = [
-    { x: 0.06, y: 0.10, s: 30, fn: basket },
-    { x: 0.92, y: 0.12, s: 24, fn: leaf },
-    { x: 0.95, y: 0.42, s: 28, fn: receipt },
-    { x: 0.04, y: 0.48, s: 20, fn: coin },
-    { x: 0.08, y: 0.86, s: 26, fn: bag },
-    { x: 0.90, y: 0.82, s: 24, fn: basket },
-    { x: 0.50, y: 0.05, s: 18, fn: leaf },
-    { x: 0.50, y: 0.96, s: 20, fn: coin }
-  ];
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.5;
     items.forEach(function (it) {
-      it.fn(it.x * canvas.width, it.y * canvas.height, it.s);
+      it.fn(it.x * canvas.width, it.y * canvas.height, it.s, it.c, it.rot);
     });
   }
 
