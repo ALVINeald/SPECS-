@@ -13,8 +13,8 @@
       <span style="font-size:.78rem"> | Supermarket Pricing Estimation & Comparison System</span>
     </div>
     <div style="font-size:.75rem">
-      Built by <strong style="color:var(--gold)">GROUP 6</strong> · 
-       INTERNET AND WEB PROGRAMMING · Bishop Stuart University · Mbarara City, Uganda
+      Built by <strong style="color:var(--gold)">MBABAZI ALVIN</strong> · 
+       <!-- INTERNET AND WEB PROGRAMMING · -->Bishop Stuart University · Mbarara City, Uganda
     </div>
   </div>
 </footer>
