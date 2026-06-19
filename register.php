@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       width:100%;max-width:680px;
       background:var(--cream);
       border-radius:20px;
-      padding:2.25rem 2.5rem;
+      padding:1.5rem 2.5rem;
       border:1.5px solid rgba(255,255,255,.08);
       box-shadow:0 24px 60px rgba(0,0,0,.25);
     }
@@ -88,26 +88,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .form-grid .full-row{grid-column:1 / -1}
 
-    .brand-row{text-align:center;margin-bottom:1.5rem}
-    .brand{font-weight:800;font-size:1.45rem;color:var(--forest);letter-spacing:-0.02em}
+    .brand-row{text-align:center;margin-bottom:0.6rem}
+    .brand{font-weight:800;font-size:1.3rem;color:var(--forest);letter-spacing:-0.02em}
     .brand em{color:var(--gold);font-style:normal}
-    .brand-sub{font-size:.78rem;color:var(--muted);margin-top:2px;margin-bottom:14px}
+    .brand-sub{font-size:.74rem;color:var(--muted);margin-top:1px;margin-bottom:8px}
 
-    .form-title{font-weight:800;font-size:1.3rem;color:var(--ink);margin-bottom:3px}
-    .form-sub{color:var(--muted);font-size:.84rem;margin-bottom:20px}
+    .form-title{font-weight:800;font-size:1.15rem;color:var(--ink);margin-bottom:2px}
+    .form-sub{color:var(--muted);font-size:.8rem;margin-bottom:12px}
     .form-sub a{color:var(--leaf);font-weight:700}
 
     .alert{padding:12px 16px;border-radius:var(--rs);font-size:.85rem;font-weight:600;margin-bottom:18px}
     .alert-error{background:#fdf0f0;border:1.5px solid #f5c6c6;color:#b91c1c}
 
-    .fgrp{margin-bottom:15px}
+    .fgrp{margin-bottom:9px}
     .flabel{
-      display:block;font-size:.71rem;font-weight:700;color:var(--muted);
-      text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;
+      display:block;font-size:.68rem;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;
     }
     .finput{
       width:100%;background:var(--white);border:1.8px solid var(--sand);
-      border-radius:var(--rs);padding:12px 14px;font-size:.95rem;
+      border-radius:var(--rs);padding:9px 14px;font-size:.92rem;
       color:var(--ink);outline:none;transition:border-color .2s;
       font-family:'Plus Jakarta Sans',sans-serif;
     }
@@ -119,41 +119,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background:none;border:none;cursor:pointer;font-size:1rem;color:var(--muted);
     }
 
-    .pw-strength{height:4px;border-radius:99px;background:var(--sand);margin-top:7px;overflow:hidden}
+    .pw-strength{height:3px;border-radius:99px;background:var(--sand);margin-top:5px;overflow:hidden}
     .pw-bar{height:100%;border-radius:99px;transition:all .3s;width:0}
-    .pw-hint{font-size:.72rem;color:var(--muted);margin-top:4px}
+    .pw-hint{font-size:.68rem;color:var(--muted);margin-top:2px}
 
     .terms-row{
       display:flex;align-items:flex-start;gap:10px;
-      margin:14px 0;font-size:.82rem;color:var(--muted);
+      margin:6px 0;font-size:.78rem;color:var(--muted);
     }
     .terms-row input{margin-top:2px;accent-color:var(--leaf)}
     .terms-row a{color:var(--leaf);font-weight:700}
 
     .btn-register{
       width:100%;background:var(--gold);color:var(--forest);
-      border:none;border-radius:var(--rs);padding:13px;
+      border:none;border-radius:var(--rs);padding:10px;
       font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
-      font-size:1rem;cursor:pointer;transition:all .2s;margin-top:4px;
+      font-size:.95rem;cursor:pointer;transition:all .2s;margin-top:6px;
     }
     .btn-register:hover{background:#d4940f;transform:translateY(-1px)}
 
     .divider{
       display:flex;align-items:center;gap:12px;
-      margin:18px 0;color:var(--muted);font-size:.78rem;font-weight:700;
+      margin:10px 0;color:var(--muted);font-size:.76rem;font-weight:700;
     }
     .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--sand)}
 
     .btn-google{
       width:100%;background:var(--white);color:var(--ink);
       border:1.8px solid var(--sand);border-radius:var(--rs);
-      padding:11px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
-      font-size:.9rem;cursor:pointer;transition:all .2s;
+      padding:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+      font-size:.88rem;cursor:pointer;transition:all .2s;
       display:flex;align-items:center;justify-content:center;gap:10px;
     }
     .btn-google:hover{border-color:#aaa}
 
-    .login-link{text-align:center;margin-top:20px;font-size:.85rem;color:var(--muted)}
+    .login-link{text-align:center;margin-top:10px;font-size:.82rem;color:var(--muted)}
     .login-link a{color:var(--leaf);font-weight:800}
 
     /* ══════════════════════════════
