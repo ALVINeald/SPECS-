@@ -73,15 +73,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .form-box{
       position:relative;z-index:1;
-      width:100%;max-width:440px;
+      width:100%;max-width:680px;
       background:var(--cream);
       border-radius:20px;
-      padding:2.5rem 2.25rem;
+      padding:2.25rem 2.5rem;
       border:1.5px solid rgba(255,255,255,.08);
       box-shadow:0 24px 60px rgba(0,0,0,.25);
-      max-height:90vh;
-      overflow-y:auto;
     }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0 24px;
+    }
+    .form-grid .full-row{grid-column:1 / -1}
 
     .brand-row{text-align:center;margin-bottom:1.5rem}
     .brand{font-weight:800;font-size:1.45rem;color:var(--forest);letter-spacing:-0.02em}
@@ -307,8 +312,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .tg-btn-close:hover { background: rgba(255,255,255,.15); color: #fff; }
 
-    @media(max-width:480px) {
-      .form-box{padding:2rem 1.5rem;max-height:94vh}
+    @media(max-width:600px) {
+      .form-grid{grid-template-columns:1fr}
+      .form-box{padding:2rem 1.5rem}
       #terms-glass { border-radius: 20px 20px 0 0; }
       #terms-overlay { align-items: flex-end; padding: 0; }
     }
@@ -336,55 +342,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php endif; ?>
 
   <form method="POST" action="register.php" id="regForm">
-    <div class="fgrp">
-      <label class="flabel">Full Name</label>
-      <input type="text" name="fullname" class="finput"
-             placeholder="e.g. Tumwebaze Sarah"
-             value="<?= isset($_POST['fullname']) ? htmlspecialchars($_POST['fullname']) : '' ?>"
-             required/>
-    </div>
-
-    <div class="fgrp">
-      <label class="flabel">Email Address</label>
-      <input type="email" name="email" class="finput"
-             placeholder="your@email.com"
-             value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
-             required/>
-    </div>
-
-    <div class="fgrp">
-      <label class="flabel">Password</label>
-      <div class="pw-wrap">
-        <input type="password" name="password" id="pwInput" class="finput"
-               placeholder="At least 6 characters"
-               oninput="checkStrength(this.value)" required/>
-        <button type="button" class="pw-toggle" onclick="togglePw('pwInput')">👁️</button>
+    <div class="form-grid">
+      <div class="fgrp">
+        <label class="flabel">Full Name</label>
+        <input type="text" name="fullname" class="finput"
+               placeholder="e.g. Tumwebaze Sarah"
+               value="<?= isset($_POST['fullname']) ? htmlspecialchars($_POST['fullname']) : '' ?>"
+               required/>
       </div>
-      <div class="pw-strength"><div class="pw-bar" id="pwBar"></div></div>
-      <div class="pw-hint" id="pwHint">Enter a password</div>
-    </div>
 
-    <div class="fgrp">
-      <label class="flabel">Confirm Password</label>
-      <div class="pw-wrap">
-        <input type="password" name="confirm" id="cfInput" class="finput"
-               placeholder="Re-enter your password" required/>
-        <button type="button" class="pw-toggle" onclick="togglePw('cfInput')">👁️</button>
+      <div class="fgrp">
+        <label class="flabel">Password</label>
+        <div class="pw-wrap">
+          <input type="password" name="password" id="pwInput" class="finput"
+                 placeholder="At least 6 characters"
+                 oninput="checkStrength(this.value)" required/>
+          <button type="button" class="pw-toggle" onclick="togglePw('pwInput')">👁️</button>
+        </div>
+        <div class="pw-strength"><div class="pw-bar" id="pwBar"></div></div>
+        <div class="pw-hint" id="pwHint">Enter a password</div>
+      </div>
+
+      <div class="fgrp">
+        <label class="flabel">Email Address</label>
+        <input type="email" name="email" class="finput"
+               placeholder="your@email.com"
+               value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
+               required/>
+      </div>
+
+      <div class="fgrp">
+        <label class="flabel">Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" name="confirm" id="cfInput" class="finput"
+                 placeholder="Re-enter your password" required/>
+          <button type="button" class="pw-toggle" onclick="togglePw('cfInput')">👁️</button>
+        </div>
+      </div>
+
+      <div class="full-row">
+        <div class="terms-row">
+          <input type="checkbox" id="terms" required/>
+          <label for="terms">
+            I have read and agree to the
+            <a href="#" onclick="openTerms(event)">Terms &amp; Conditions</a>
+          </label>
+        </div>
+        <div id="terms-hint" style="font-size:.72rem;color:var(--muted);margin-top:4px;display:none">
+          ✅ You have agreed to the Terms &amp; Conditions
+        </div>
+
+        <button type="submit" class="btn-register">Create My Account →</button>
       </div>
     </div>
-
-    <div class="terms-row">
-      <input type="checkbox" id="terms" required/>
-      <label for="terms">
-        I have read and agree to the
-        <a href="#" onclick="openTerms(event)">Terms &amp; Conditions</a>
-      </label>
-    </div>
-    <div id="terms-hint" style="font-size:.72rem;color:var(--muted);margin-top:4px;display:none">
-      ✅ You have agreed to the Terms &amp; Conditions
-    </div>
-
-    <button type="submit" class="btn-register">Create My Account →</button>
   </form>
 
   <div class="divider">or</div>
