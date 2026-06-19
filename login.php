@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign In – SPECS Mbarara</title>
   <link rel="icon" href="/specs/assets/images/favicon.ico"/>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     :root{
       --forest:#18382a;--leaf:#2d6a4f;--mint:#52b788;--gold:#e9a820;
@@ -55,99 +55,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       --white:#fff;--red:#e63946;--r:14px;--rs:8px;
     }
 
-    html{
-      width:100%;overflow-x:hidden;
-      margin:0;padding:0;
-    }
-
+    html{width:100%;overflow-x:hidden;margin:0;padding:0}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
     body{
-      font-family:'Nunito Sans',sans-serif;
-      min-height:100vh;
-      width:100%;
-      overflow-x:hidden;
-      display:flex;
-      background:var(--cream);
-      margin:0;
-      padding:0;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      min-height:100vh;width:100%;overflow-x:hidden;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--forest);
+      position:relative;
+      padding:24px;
     }
 
-    /* ── LEFT PANEL ── */
-    .left-panel{
-      width:45%;
-      background:var(--forest);
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      padding:48px;
-      position:relative;
-      overflow:hidden;
-      flex-shrink:0;
+    #doodle-bg{
+      position:fixed;inset:0;width:100%;height:100%;
+      pointer-events:none;
     }
-    .left-panel::before{
-      content:'';position:absolute;
-      width:380px;height:380px;border-radius:50%;
-      background:rgba(255,255,255,.04);
-      top:-80px;right:-80px;
+
+    .glow-a{
+      position:fixed;width:380px;height:380px;border-radius:50%;
+      background:rgba(255,255,255,.03);top:-100px;right:-100px;
+      pointer-events:none;
     }
-    .left-panel::after{
-      content:'';position:absolute;
-      width:260px;height:260px;border-radius:50%;
-      background:rgba(233,168,32,.07);
-      bottom:-60px;left:-40px;
+    .glow-b{
+      position:fixed;width:260px;height:260px;border-radius:50%;
+      background:rgba(233,168,32,.05);bottom:-60px;left:-60px;
+      pointer-events:none;
     }
+
+    .form-box{
+      position:relative;z-index:1;
+      width:100%;max-width:400px;
+      background:var(--cream);
+      border-radius:20px;
+      padding:2.5rem 2.25rem;
+      border:1.5px solid rgba(255,255,255,.08);
+      box-shadow:0 24px 60px rgba(0,0,0,.25);
+    }
+
+    .brand-row{text-align:center;margin-bottom:1.75rem}
     .brand{
-      font-family:'Nunito',sans-serif;font-weight:900;
-      font-size:2.4rem;color:var(--white);
-      margin-bottom:6px;position:relative;z-index:1;
+      font-weight:800;font-size:1.55rem;color:var(--forest);
+      letter-spacing:-0.02em;
     }
     .brand em{color:var(--gold);font-style:normal}
-    .brand-sub{
-      color:rgba(255,255,255,.5);font-size:.82rem;
-      font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-      margin-bottom:38px;position:relative;z-index:1;
-    }
-    .feature{
-      display:flex;align-items:flex-start;gap:14px;
-      margin-bottom:22px;position:relative;z-index:1;
-    }
-    .fi{
-      width:40px;height:40px;border-radius:10px;
-      background:rgba(255,255,255,.09);
-      display:flex;align-items:center;justify-content:center;
-      font-size:1.2rem;flex-shrink:0;
-    }
-    .ft{color:rgba(255,255,255,.75);font-size:.84rem;line-height:1.5}
-    .ft strong{color:var(--white);font-weight:700;display:block;font-size:.9rem}
-    .stores-strip{
-      display:flex;gap:8px;flex-wrap:wrap;
-      margin-top:36px;position:relative;z-index:1;
-    }
-    .store-chip{
-      background:rgba(255,255,255,.08);
-      color:rgba(255,255,255,.55);
-      font-size:.68rem;font-weight:700;
-      padding:4px 10px;border-radius:99px;
-      border:1px solid rgba(255,255,255,.1);
-    }
-
-    /* ── RIGHT PANEL ── */
-    .right-panel{
-      flex:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:40px 24px;
-      min-width:0;
-    }
-    .form-box{width:100%;max-width:420px}
-    .form-title{
-      font-family:'Nunito',sans-serif;font-weight:900;
-      font-size:1.7rem;color:var(--ink);margin-bottom:4px;
-    }
-    .form-sub{color:var(--muted);font-size:.86rem;margin-bottom:28px}
-    .form-sub a{color:var(--leaf);font-weight:700}
+    .brand-sub{font-size:.8rem;color:var(--muted);margin-top:2px}
 
     .alert{
       padding:12px 16px;border-radius:var(--rs);
@@ -158,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .fgrp{margin-bottom:16px}
     .flabel{
-      display:block;font-size:.72rem;font-weight:800;
+      display:block;font-size:.72rem;font-weight:700;
       color:var(--muted);text-transform:uppercase;
       letter-spacing:.07em;margin-bottom:6px;
     }
@@ -167,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       border:1.8px solid var(--sand);border-radius:var(--rs);
       padding:12px 14px;font-size:.95rem;color:var(--ink);
       outline:none;transition:border-color .2s;
-      font-family:'Nunito Sans',sans-serif;
+      font-family:'Plus Jakarta Sans',sans-serif;
     }
     .finput:focus{border-color:var(--leaf)}
     .pw-wrap{position:relative}
@@ -181,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .btn-login{
       width:100%;background:var(--forest);color:var(--white);
       border:none;border-radius:var(--rs);padding:13px;
-      font-family:'Nunito',sans-serif;font-weight:900;
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
       font-size:1rem;cursor:pointer;transition:all .2s;margin-top:4px;
     }
     .btn-login:hover{background:var(--leaf);transform:translateY(-1px)}
@@ -195,122 +147,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .btn-google{
       width:100%;background:var(--white);color:var(--ink);
       border:1.8px solid var(--sand);border-radius:var(--rs);
-      padding:11px;font-family:'Nunito',sans-serif;font-weight:800;
+      padding:11px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
       font-size:.9rem;cursor:pointer;transition:all .2s;
       display:flex;align-items:center;justify-content:center;gap:10px;
     }
     .btn-google:hover{border-color:#aaa;background:#fafafa}
 
-    .reg-link{
-      text-align:center;margin-top:22px;
-      font-size:.85rem;color:var(--muted);
-    }
-    .reg-link a{color:var(--leaf);font-weight:800;font-family:'Nunito',sans-serif}
+    .reg-link{text-align:center;margin-top:22px;font-size:.85rem;color:var(--muted)}
+    .reg-link a{color:var(--leaf);font-weight:800}
 
-
-    @media(max-width:768px){
-      .left-panel{display:none}
-      .right-panel{padding:30px 20px}
+    @media(max-width:480px){
+      .form-box{padding:2rem 1.5rem}
     }
   </style>
 </head>
 <body>
 
-<!-- LEFT PANEL -->
-<div class="left-panel">
-  <div class="brand">SP<em>EC</em>S</div>
-  <div class="brand-sub">Mbarara City · Uganda</div>
+<canvas id="doodle-bg"></canvas>
+<div class="glow-a"></div>
+<div class="glow-b"></div>
 
-  <div class="feature">
-    <div class="fi">🛒</div>
-    <div class="ft">
-      <strong>Compare Prices</strong>
-      Browse 205+ products across 7 supermarkets and find the best deals instantly.
-    </div>
-  </div>
-  <div class="feature">
-    <div class="fi">🔔</div>
-    <div class="ft">
-      <strong>Price Alerts</strong>
-      Set your target price and get notified when products drop below your budget.
-    </div>
-  </div>
-  <div class="feature">
-    <div class="fi">🧾</div>
-    <div class="ft">
-      <strong>Smart Shopping Plans</strong>
-      Save and share your shopping list like an MTN MoMo receipt.
-    </div>
-  </div>
-  <div class="feature">
-    <div class="fi">📈</div>
-    <div class="ft">
-      <strong>Price Trends</strong>
-      Track how prices change over time across Mbarara supermarkets.
-    </div>
+<div class="form-box">
+  <div class="brand-row">
+    <div class="brand">SP<em>EC</em>S</div>
+    <div class="brand-sub">Mbarara City &middot; Uganda</div>
   </div>
 
-  <div class="stores-strip">
-    <span class="store-chip">FRESCO</span>
-    <span class="store-chip">Kirimi</span>
-    <span class="store-chip">Day to Day</span>
-    <span class="store-chip">Apple D2D</span>
-    <span class="store-chip">Amazon Express</span>
-    <span class="store-chip">Golf Course</span>
-    <span class="store-chip">Central Market</span>
-  </div>
-</div>
+  <?php if ($error): ?>
+    <div class="alert alert-error">⚠️ <?= htmlspecialchars($error) ?></div>
+  <?php endif; ?>
 
-<!-- RIGHT PANEL -->
-<div class="right-panel">
-  <div class="form-box">
-    <div class="form-title">Welcome back 👋</div>
-    <div class="form-sub">
-      Don't have an account? <a href="register.php">Create one free</a>
+  <?php if ($success): ?>
+    <div class="alert alert-success">✅ <?= htmlspecialchars($success) ?></div>
+  <?php endif; ?>
+
+  <form method="POST" action="login.php" autocomplete="off">
+    <div class="fgrp">
+      <label class="flabel">Email Address</label>
+      <input type="email" name="email" class="finput"
+             placeholder="your@email.com"
+             autocomplete="off"
+             value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
+             required/>
     </div>
-
-    <?php if ($error): ?>
-      <div class="alert alert-error">⚠️ <?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-
-    <?php if ($success): ?>
-      <div class="alert alert-success">✅ <?= htmlspecialchars($success) ?></div>
-    <?php endif; ?>
-
-    <form method="POST" action="login.php" autocomplete="off">
-      <div class="fgrp">
-        <label class="flabel">Email Address</label>
-        <input type="email" name="email" class="finput"
-               placeholder="your@email.com"
-               autocomplete="off"
-               value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
-               required/>
+    <div class="fgrp">
+      <label class="flabel">Password</label>
+      <div class="pw-wrap">
+        <input type="password" name="password" id="pwInput"
+               class="finput" placeholder="Enter your password"
+               autocomplete="new-password" required/>
+        <button type="button" class="pw-toggle" onclick="togglePw()">👁️</button>
       </div>
-      <div class="fgrp">
-        <label class="flabel">Password</label>
-        <div class="pw-wrap">
-          <input type="password" name="password" id="pwInput"
-                 class="finput" placeholder="Enter your password"
-                 autocomplete="new-password" required/>
-          <button type="button" class="pw-toggle" onclick="togglePw()">👁️</button>
-        </div>
-        <div class="forgot"><a href="forgot.php">Forgot password?</a></div>
-      </div>
-      <button type="submit" class="btn-login">Sign In to SPECS</button>
-    </form>
-
-    <div class="divider">or continue with</div>
-
-    <button class="btn-google" onclick="googleLogin()">
-      <img src="https://www.google.com/favicon.ico" width="18" height="18" alt="G"/>
-      Continue with Google
-    </button>
-
-    <div class="reg-link">
-      New to SPECS? <a href="register.php">Create a free account</a>
+      <div class="forgot"><a href="forgot.php">Forgot password?</a></div>
     </div>
+    <button type="submit" class="btn-login">Sign In to SPECS</button>
+  </form>
 
+  <div class="divider">or continue with</div>
 
+  <button class="btn-google" onclick="googleLogin()">
+    <img src="https://www.google.com/favicon.ico" width="18" height="18" alt="G"/>
+    Continue with Google
+  </button>
+
+  <div class="reg-link">
+    New to SPECS? <a href="register.php">Create a free account</a>
   </div>
 </div>
 
@@ -323,6 +224,100 @@ function togglePw() {
 function googleLogin() {
   alert('Google login requires Google OAuth setup.\nUse email/password for now.\n\nSetup guide: console.cloud.google.com');
 }
+
+(function () {
+  const canvas = document.getElementById('doodle-bg');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    draw();
+  }
+
+  function basket(cx, cy, s) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 0.6 * s, cy - 0.3 * s);
+    ctx.lineTo(cx + 0.6 * s, cy - 0.3 * s);
+    ctx.lineTo(cx + 0.45 * s, cy + 0.5 * s);
+    ctx.lineTo(cx - 0.45 * s, cy + 0.5 * s);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - 0.35 * s, cy - 0.3 * s);
+    ctx.quadraticCurveTo(cx, cy - 0.9 * s, cx + 0.35 * s, cy - 0.3 * s);
+    ctx.stroke();
+  }
+
+  function leaf(cx, cy, s) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 0.5 * s, 0.3 * s, Math.PI / 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - 0.3 * s, cy + 0.2 * s);
+    ctx.lineTo(cx + 0.3 * s, cy - 0.2 * s);
+    ctx.stroke();
+  }
+
+  function receipt(cx, cy, s) {
+    ctx.beginPath();
+    ctx.rect(cx - 0.35 * s, cy - 0.6 * s, 0.7 * s, 1.2 * s);
+    ctx.stroke();
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx - 0.2 * s, cy - 0.3 * s + i * 0.3 * s);
+      ctx.lineTo(cx + 0.2 * s, cy - 0.3 * s + i * 0.3 * s);
+      ctx.stroke();
+    }
+  }
+
+  function coin(cx, cy, s) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, 0.4 * s, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 0.2 * s);
+    ctx.lineTo(cx, cy + 0.2 * s);
+    ctx.stroke();
+  }
+
+  function bag(cx, cy, s) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 0.4 * s, cy - 0.4 * s);
+    ctx.lineTo(cx + 0.4 * s, cy - 0.4 * s);
+    ctx.lineTo(cx + 0.3 * s, cy + 0.5 * s);
+    ctx.lineTo(cx - 0.3 * s, cy + 0.5 * s);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy - 0.4 * s, 0.15 * s, Math.PI, 0);
+    ctx.stroke();
+  }
+
+  // Fixed positions (fractions of viewport), drawn once - no animation
+  const items = [
+    { x: 0.06, y: 0.10, s: 30, fn: basket },
+    { x: 0.92, y: 0.12, s: 24, fn: leaf },
+    { x: 0.95, y: 0.42, s: 28, fn: receipt },
+    { x: 0.04, y: 0.48, s: 20, fn: coin },
+    { x: 0.08, y: 0.86, s: 26, fn: bag },
+    { x: 0.90, y: 0.82, s: 24, fn: basket },
+    { x: 0.50, y: 0.05, s: 18, fn: leaf },
+    { x: 0.50, y: 0.96, s: 20, fn: coin }
+  ];
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1.4;
+    items.forEach(function (it) {
+      it.fn(it.x * canvas.width, it.y * canvas.height, it.s);
+    });
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
 </script>
 </body>
 </html>
