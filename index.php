@@ -356,7 +356,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
   </style>
 </head>
 <body>
-  // @Alvin works | the above styles are for the entire homepage, we use a combination of CSS Grid and Flexbox to create a responsive layout, we have a fixed navigation bar at the top, a hero section with a background gradient and some decorative circles, a stats bar that shows live numbers from the database, sections for how it works, top deals, stores and features, and a call to action at the bottom before the footer
+  <!-- @Alvin works | the above styles are for the entire homepage, we use a combination of CSS Grid and Flexbox to create a responsive layout, we have a fixed navigation bar at the top, a hero section with a background gradient and some decorative circles, a stats bar that shows live numbers from the database, sections for how it works, top deals, stores and features, and a call to action at the bottom before the footer -->
 
 <!-- NAVIGATION -->
 <nav>
@@ -565,7 +565,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
       <span style="font-size:.8rem"> | Supermarket Pricing Estimation & Comparison System</span>
     </div>
     <div style="font-size:.76rem">
-      Built by <strong style="color:var(--gold)"><!--Mbabazi Alvin & --> GROUP 6</strong> · <!--24/BSU/DIT/3253 --> · Bishop Stuart University · Mbarara
+      Built by <strong style="color:var(--gold)">Mbabazi Alvin</strong> · Mbarara
     </div>
   </div>
 </footer>
