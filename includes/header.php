@@ -614,6 +614,16 @@ function showToast(msg, icon = '✅') {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3400);
 }
+
+// ── BACK/FORWARD CACHE GUARD ──
+// If the browser restores this page from its back-forward cache
+// (e.g. back gesture after signing out), reload it from the server
+// so the session check in requireLogin() runs again.
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted) {
+    window.location.reload();
+  }
+});
 </script>
 
 <div class="page-wrap">
