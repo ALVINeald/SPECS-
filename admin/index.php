@@ -98,7 +98,11 @@ include '../includes/header.php';
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px">
+  <style>
+    .adm-two{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px}
+    @media(max-width:900px){.adm-two{grid-template-columns:1fr}}
+  </style>
+  <div class="adm-two">
 
     <!-- RECENT PRICE CHANGES -->
     <div class="card">
