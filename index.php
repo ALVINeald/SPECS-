@@ -308,10 +308,50 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
       color:var(--gold);font-size:1.1rem;
     }
 
+    /* ── MOBILE ── */
     @media(max-width:768px){
-      .hero h1{font-size:2rem}
+      html,body{overflow-x:hidden}
+      nav{padding:0 16px}
+      .btn-nav{padding:7px 14px;font-size:.8rem}
+
+      /* FIX: with min-height:100vh + align-items:center, tall content
+         was pushed up UNDER the fixed navbar. Anchor to top instead
+         and clear the 58px nav with padding. */
+      .hero{
+        min-height:auto;
+        align-items:flex-start;
+        padding:92px 20px 52px;
+      }
+      .hero-inner{flex-direction:column;gap:36px}
+      .hero h1{font-size:1.95rem;line-height:1.2}
+      .hero p{font-size:.9rem}
+      .hero-btns{width:100%}
+      .btn-hero-primary,.btn-hero-secondary{
+        flex:1;text-align:center;min-width:140px;
+        padding:13px 18px;font-size:.9rem;
+      }
+      .hero-stats{gap:20px;flex-wrap:wrap}
       .hero-visual{display:none}
-      .hero-inner{flex-direction:column}
+      .hero::before{width:340px;height:340px;top:-140px;right:-120px}
+      .hero::after{width:240px;height:240px;bottom:-80px;left:-80px}
+
+      .sec-title{font-size:1.5rem}
+      .stat-num{font-size:1.3rem}
+      .steps{grid-template-columns:1fr;gap:16px;margin-top:28px}
+      .step{padding:22px}
+      .deals-grid{grid-template-columns:1fr;gap:14px}
+      .stores-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+      .btn-cta,.btn-cta-outline{
+        display:block;width:100%;margin:8px 0;text-align:center;
+      }
+      .footer-inner{flex-direction:column;text-align:center}
+    }
+
+    @media(max-width:420px){
+      .hero h1{font-size:1.7rem}
+      .hero-badge{font-size:.7rem}
+      .stores-grid{grid-template-columns:1fr}
+      .hero-stats{gap:14px}
     }
   </style>
 </head>
