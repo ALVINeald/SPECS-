@@ -10,11 +10,9 @@
  */
 require_once '../includes/auth.php'; // also requires config/db.php and starts the session
 
-// auth.php has no dedicated admin-check helper, so the guard is inline here,
-// matching the $_SESSION['role'] convention set by loginUser() in auth.php.
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
-    redirect('../login.php?msg=Admin+access+required');
-}
+// Standard admin guard (functions.php) — also sends the no-store headers
+// that keep this page out of the browser's back/forward cache.
+requireAdmin();
 
 require_once '../includes/header.php';
 ?>
