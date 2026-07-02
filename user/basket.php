@@ -119,7 +119,8 @@ include '../includes/header.php';
 
 /* ── LAYOUT ── */
 .basket-wrap { max-width:1240px; margin:0 auto; padding:24px; }
-.basket-grid { display:grid; grid-template-columns:1fr 360px; gap:22px; }
+.basket-grid { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:22px; }
+.basket-grid > * { min-width:0; }
 
 /* ── BASKET ITEMS ── */
 .basket-item {
@@ -261,10 +262,29 @@ include '../includes/header.php';
 .receipt-total  { display:flex; justify-content:space-between; padding:12px 0 6px; font-size:1rem; font-weight:900; }
 
 @media(max-width:900px){
-  .basket-grid { grid-template-columns:1fr; }
+  .basket-grid { grid-template-columns:minmax(0,1fr); }
 }
 
 @media(max-width:600px){
+  /* ══ BULLETPROOF v3: nothing may exceed the screen width ══ */
+  .basket-wrap, .basket-grid, .basket-sidebar, #store-panel,
+  .summary-card, .rank-card, .receipt-box {
+    max-width:100%;
+  }
+  .basket-wrap { overflow-x:clip; }
+  .bi-name, .sc-name, .receipt-item span:first-child {
+    overflow-wrap:anywhere; word-break:break-word; white-space:normal;
+  }
+
+  /* store panel item rows: name flexes + wraps, price never pushed off-screen */
+  .sc-item > div:first-child { flex:1 1 auto; min-width:0; padding-right:10px; }
+  .sc-price { flex-shrink:0; white-space:nowrap; }
+
+  /* store ranking rows: same treatment */
+  .rank-row > div:first-child { flex:1 1 auto; min-width:0; }
+  .rank-row > div:first-child > div:last-child { min-width:0; }
+  .rank-row > div:last-child { flex-shrink:0; }
+
   /* ── page frame ── */
   .basket-wrap { padding:16px 12px; }
   .ph { padding:22px 16px; }
