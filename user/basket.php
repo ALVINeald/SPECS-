@@ -263,6 +263,29 @@ include '../includes/header.php';
 @media(max-width:900px){
   .basket-grid { grid-template-columns:1fr; }
 }
+
+@media(max-width:600px){
+  .basket-wrap { padding:16px 14px; }
+
+  /* Each basket item becomes two rows:
+     product info on top, controls underneath */
+  .basket-item { flex-wrap:wrap; row-gap:10px; }
+  .bi-info { flex:1 1 100%; }
+  .qty-controls { order:1; }
+  .bi-price { order:2; margin-left:auto; min-width:0; }
+  .basket-item > form { order:3; }
+
+  /* Comfortable thumb-sized +/- buttons */
+  .qty-btn { width:34px; height:34px; font-size:1rem; }
+  .qty-num { min-width:26px; font-size:1rem; }
+
+  /* Store panel + receipt breathing room */
+  .sp-header  { padding:14px 16px; }
+  .sp-content { padding:14px 16px; }
+  .sp-tab     { padding:10px 14px; }
+  .sc-total-num { font-size:1.15rem; }
+  .receipt-box  { padding:18px 14px; }
+}
 </style>
 
 <div class="ph">
