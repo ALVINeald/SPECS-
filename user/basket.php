@@ -265,26 +265,50 @@ include '../includes/header.php';
 }
 
 @media(max-width:600px){
-  .basket-wrap { padding:16px 14px; }
+  /* ── page frame ── */
+  .basket-wrap { padding:16px 12px; }
+  .ph { padding:22px 16px; }
+  .ph h1 { font-size:1.3rem; }
 
-  /* Each basket item becomes two rows:
-     product info on top, controls underneath */
-  .basket-item { flex-wrap:wrap; row-gap:10px; }
+  /* ── basket items: two neat rows ──
+     row 1: product name / unit / best price
+     row 2: quantity stepper · line total · delete   */
+  .basket-item { flex-wrap:wrap; row-gap:12px; padding:16px 0; }
   .bi-info { flex:1 1 100%; }
-  .qty-controls { order:1; }
-  .bi-price { order:2; margin-left:auto; min-width:0; }
+  .bi-name { font-size:.95rem; }
+  .qty-controls { order:1; gap:9px; }
+  .bi-price { order:2; margin-left:auto; min-width:0; font-size:1rem; }
   .basket-item > form { order:3; }
 
-  /* Comfortable thumb-sized +/- buttons */
-  .qty-btn { width:34px; height:34px; font-size:1rem; }
-  .qty-num { min-width:26px; font-size:1rem; }
+  /* comfortable thumb targets */
+  .qty-btn { width:36px; height:36px; font-size:1.05rem; border-radius:8px; }
+  .qty-num { min-width:28px; font-size:1.05rem; }
+  .basket-item .btn-red { padding:8px 12px !important; }
 
-  /* Store panel + receipt breathing room */
+  /* ── store comparison panel ── */
   .sp-header  { padding:14px 16px; }
+  .sp-sub     { font-size:.72rem; }
+  .sp-tab     { padding:11px 13px; }
   .sp-content { padding:14px 16px; }
-  .sp-tab     { padding:10px 14px; }
-  .sc-total-num { font-size:1.15rem; }
-  .receipt-box  { padding:18px 14px; }
+  .sc-item    { padding:11px 0; }
+  .sc-name    { font-size:.86rem; }
+  .sc-total-num { font-size:1.2rem; }
+  .sc-save-btn  { padding:14px; font-size:.92rem; }
+
+  /* ── sidebar cards ── */
+  .basket-sidebar { gap:14px; }
+  .summary-card { padding:18px 16px; }
+  .sc-amount { font-size:1.7rem; }
+  .rank-card { padding:16px 14px; }
+  .rank-row  { padding:11px 8px; }
+
+  /* ── saved-plan receipt ── */
+  .receipt-box { padding:20px 16px; }
+  .receipt-brand { font-size:1.25rem; }
+  .receipt-item { font-size:.8rem; gap:10px; align-items:flex-start; }
+  .receipt-item span:first-child { flex:1; min-width:0; }
+  .receipt-item span:last-child  { flex-shrink:0; white-space:nowrap; }
+  .receipt-box button { width:100%; padding:12px !important; }
 }
 </style>
 

@@ -356,7 +356,7 @@ $stores = $conn->query("SELECT * FROM stores WHERE active=1 ORDER BY tier DESC")
   </style>
 </head>
 <body>
-  // @Alvin works | the above styles are for the entire homepage, we use a combination of CSS Grid and Flexbox to create a responsive layout, we have a fixed navigation bar at the top, a hero section with a background gradient and some decorative circles, a stats bar that shows live numbers from the database, sections for how it works, top deals, stores and features, and a call to action at the bottom before the footer
+    <!-- @Alvin works | the above styles are for the entire homepage, we use a combination of CSS Grid and Flexbox to create a responsive layout, we have a fixed navigation bar at the top, a hero section with a background gradient and some decorative circles, a stats bar that shows live numbers from the database, sections for how it works, top deals, stores and features, and a call to action at the bottom before the footer
 
 <!-- NAVIGATION -->
 <nav>
