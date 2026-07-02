@@ -128,6 +128,7 @@ if ($step === 'reset' && $token) {
 
     .fp-box{
       width:100%; max-width:440px;
+      margin:auto;
       background:var(--white);
       border-radius:var(--r);
       border:1.5px solid var(--sand);
