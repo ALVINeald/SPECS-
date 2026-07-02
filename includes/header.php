@@ -380,11 +380,102 @@ $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
   }
   .toast.show { transform:translateY(0); opacity:1; }
 
-  /* Mobile */
-  @media(max-width:768px) {
-    .nav-links { display:none; }
-    .nav-name  { display:none; }
-    body       { padding-top:64px; }
+  /* ── HAMBURGER BUTTON (hidden on desktop) ── */
+  .nav-burger {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 10px;
+    padding: 0;
+  }
+  .nav-burger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: transform .25s ease, opacity .2s ease;
+  }
+  .top-nav.menu-open .nav-burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .top-nav.menu-open .nav-burger span:nth-child(2) { opacity: 0; }
+  .top-nav.menu-open .nav-burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Links that only appear inside the mobile menu */
+  .nl-mobile-only { display: none; }
+
+  /* ── MOBILE NAV (≤900px) ── */
+  @media (max-width: 900px) {
+    html, body { overflow-x: hidden; }
+    body { padding-top: 64px; }
+
+    .top-nav { padding: 0 14px; }
+    .nav-brand { margin-right: 0; flex: 1; }
+    .nav-name, .nav-divider, .btn-signout { display: none; }
+    .basket-btn { padding: 8px 12px; font-size: .74rem; }
+    .nav-burger { display: flex; }
+
+    /* Turn the link row into a slide-down menu */
+    .top-nav .nav-links {
+      display: flex;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      height: auto;
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+      background: rgba(24, 56, 42, .98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px 0 12px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 18px 30px rgba(0,0,0,.35);
+      transform: translateY(-12px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease, visibility .2s;
+      z-index: 998;
+    }
+    .top-nav.menu-open .nav-links {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .top-nav .nav-links .nl {
+      width: 100%;
+      height: 50px;
+      padding: 0 22px;
+      font-size: .92rem;
+      color: rgba(255,255,255,.75);
+    }
+    .top-nav .nav-links .nl.active {
+      color: #fff;
+      background: rgba(255,255,255,.06);
+    }
+    .top-nav .nav-links .nl::after { display: none; }
+    .top-nav .nav-links .nl-mobile-only {
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,.1);
+      margin-top: 6px;
+      padding-top: 4px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .nav-brand-badge { display: none; }
+    .btn-signin { display: none; }
   }
   </style>
 
@@ -426,6 +517,9 @@ $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
     <a href="/specs/user/account.php" class="nl <?= $currentPage==='account' ? 'active':'' ?>">
       <span class="nl-icon">👤</span> Account
     </a>
+    <a href="/specs/logout.php" class="nl nl-mobile-only">
+      <span class="nl-icon">🚪</span> Sign Out
+    </a>
   </div>
   <div class="nav-right">
     <a href="/specs/user/basket.php" class="basket-btn">
@@ -462,6 +556,9 @@ $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
     <a href="/specs/admin/reports.php"  class="nl <?= $currentPage==='reports'  ? 'active':'' ?>">
       <span class="nl-icon">📋</span> Reports
     </a>
+    <a href="/specs/logout.php" class="nl nl-mobile-only">
+      <span class="nl-icon">🚪</span> Sign Out
+    </a>
   </div>
   <div class="nav-right">
     <span class="admin-badge">Admin</span>
@@ -477,12 +574,21 @@ $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
     <a href="/specs/index.php" class="nl <?= $currentPage==='index' && $currentDir!=='admin' && $currentDir!=='user' ? 'active':'' ?>">
       <span class="nl-icon">🏠</span> Home
     </a>
+    <a href="/specs/login.php" class="nl nl-mobile-only">
+      <span class="nl-icon">🔑</span> Sign In
+    </a>
   </div>
   <div class="nav-right">
     <a href="/specs/login.php"    class="btn-signin">Sign In</a>
     <a href="/specs/register.php" class="btn-register">Get Started Free</a>
   </div>
   <?php endif; ?>
+
+  <!-- HAMBURGER (mobile only) -->
+  <button type="button" class="nav-burger" aria-label="Open menu"
+          onclick="this.closest('.top-nav').classList.toggle('menu-open')">
+    <span></span><span></span><span></span>
+  </button>
 
 </nav>
 
