@@ -43,7 +43,19 @@ function isAdmin() {
 
 // ── REQUIRE LOGIN ────────────────────────────────────────────
 // Use at top of any page that needs login
+// ── PREVENT CACHING OF PROTECTED PAGES ───────────────────────
+// Stops the browser's back/forward cache from showing a
+// logged-in page snapshot after the user has signed out.
+function noCacheHeaders() {
+    if (!headers_sent()) {
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
+    }
+}
+
 function requireLogin() {
+    noCacheHeaders();
     if (!isLoggedIn()) {
         redirect('../login.php?msg=Please+log+in+to+continue');
     }
@@ -52,6 +64,7 @@ function requireLogin() {
 // ── REQUIRE ADMIN ────────────────────────────────────────────
 // Use at top of any admin page
 function requireAdmin() {
+    noCacheHeaders();
     if (!isLoggedIn()) {
         redirect('../login.php?msg=Please+log+in');
     }
