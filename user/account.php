@@ -60,6 +60,28 @@ $basketTotal  = $conn->query("
 include '../includes/header.php';
 ?>
 
+<style>
+/* ── Account page responsive layout ── */
+.acct-hero{
+  background:linear-gradient(135deg,var(--forest),var(--leaf));
+  border-radius:var(--r);padding:28px;margin-bottom:22px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.acct-stats{display:flex;gap:16px}
+.acct-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.acct-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+
+@media(max-width:820px){
+  .acct-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .acct-hero{padding:20px;gap:14px;text-align:center;flex-direction:column}
+  .acct-hero .acct-info{text-align:center}
+  .acct-stats{width:100%;justify-content:center;gap:28px}
+  .acct-summary{grid-template-columns:repeat(2,1fr);gap:10px}
+}
+</style>
+
 <div class="ph">
   <div style="max-width:1240px;margin:0 auto">
     <h1>👤 My Account</h1>
@@ -71,16 +93,16 @@ include '../includes/header.php';
   <?php showFlash(); ?>
 
   <!-- PROFILE HEADER CARD -->
-  <div style="background:linear-gradient(135deg,var(--forest),var(--leaf));border-radius:var(--r);padding:28px;margin-bottom:22px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+  <div class="acct-hero">
     <div style="width:64px;height:64px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.5rem;color:var(--forest);flex-shrink:0">
       <?= strtoupper(substr($user['name'],0,1)) ?>
     </div>
-    <div style="flex:1">
+    <div class="acct-info" style="flex:1">
       <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.3rem;color:#fff"><?= htmlspecialchars($user['name']) ?></div>
-      <div style="color:rgba(255,255,255,.6);font-size:.85rem"><?= htmlspecialchars($user['email']) ?></div>
+      <div style="color:rgba(255,255,255,.6);font-size:.85rem;overflow-wrap:anywhere"><?= htmlspecialchars($user['email']) ?></div>
       <div style="color:rgba(255,255,255,.45);font-size:.76rem;margin-top:3px">Member since <?= date('F Y', strtotime($dbUser['created_at'] ?? 'now')) ?></div>
     </div>
-    <div style="display:flex;gap:16px">
+    <div class="acct-stats">
       <?php
       $sumStats = [
         ['🛒', $basketCount, 'Items'],
@@ -97,7 +119,7 @@ include '../includes/header.php';
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+  <div class="acct-grid">
 
     <!-- UPDATE PROFILE -->
     <div class="card">
@@ -149,7 +171,7 @@ include '../includes/header.php';
   <!-- BASKET SUMMARY -->
   <div class="card" style="margin-top:20px">
     <div class="card-title">🛒 My Shopping Summary</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px">
+    <div class="acct-summary">
       <?php
       $summaryItems = [
         ['🛒', 'Items in Basket',   $basketCount,              'basket.php'],
